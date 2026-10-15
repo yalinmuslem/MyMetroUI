@@ -12,6 +12,7 @@
 
     <application
         android:allowBackup="false"
+        android:name=".LauncherApp"
         android:label="@string/app_name"
         android:theme="@android:style/Theme.Material.NoActionBar">
         <activity

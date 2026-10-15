@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">MyMetroUI</string>
+    <string name="pin_to_start">Pin to Start</string>
+    <string name="uninstall">Uninstall</string>
+    <string name="set_default_title">Make MyMetroUI your home app</string>
+    <string name="set_default_action">Choose</string>
 </resources>
