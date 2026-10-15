@@ -27,3 +27,26 @@ or go to *Settings > Apps > Default apps > Home app* and pick MyMetroUI.
 - Tap a tile to launch; long-press a tile to enter edit mode (drag to move, buttons to resize / unpin).
 - Tap empty space or press Back to leave edit mode.
 - Swipe left or tap the round arrow for the app list; tap a letter header for the jump list; long-press an app to pin or uninstall.
+
+## Status
+
+Core launcher (sub-project 1) is implemented: Start grid (small / medium / wide tiles, pin, unpin, drag, resize),
+alphabetical app list with jump list, tilt / turnstile / fly-in / parallax motion, default-launcher prompt,
+and database recovery. Work profiles are supported (a tile's key includes the user id).
+
+Not yet done: live tiles, theming beyond the single default accent, lock screen, Action Center, Hubs, search, widgets.
+
+## Project layout
+
+```
+domain/   Tile, TileLayout (pure Kotlin grid logic)
+data/     AppRepository (LauncherApps), TileRepository (Room), default tiles, grouping
+ui/       StartViewModel, AppListViewModel, home/ start/ applist/ motion/ theme/
+```
+
+All durations, springs and angles live in `ui/motion/MotionSpec.kt`; tune motion there.
+
+## Testing notes
+
+Compose UI tests run on the JVM with Robolectric (`src/test`), so no device is needed.
+Motion and gestures have not been verified on a real device or emulator yet; check them manually and tune `MotionSpec`.
