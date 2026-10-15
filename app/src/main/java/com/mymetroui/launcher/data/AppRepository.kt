@@ -17,11 +17,11 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.Dispatchers
 
-class AppRepository(private val context: Context) {
+class AppRepository(private val context: Context) : AppSource {
     private val launcherApps = context.getSystemService(LauncherApps::class.java)
     private val userManager = context.getSystemService(UserManager::class.java)
 
-    val apps: Flow<List<AppInfo>> = callbackFlow {
+    override val apps: Flow<List<AppInfo>> = callbackFlow {
         val cb = object : LauncherApps.Callback() {
             override fun onPackageRemoved(packageName: String, user: UserHandle) { trySend(Unit) }
             override fun onPackageAdded(packageName: String, user: UserHandle) { trySend(Unit) }
@@ -44,7 +44,7 @@ class AppRepository(private val context: Context) {
             }
         }.sortedBy { it.label.lowercase() }
 
-    fun launch(app: AppInfo, sourceBounds: Rect?): Boolean = try {
+    override fun launch(app: AppInfo, sourceBounds: Rect?): Boolean = try {
         launcherApps.startMainActivity(app.component, app.user, sourceBounds, null)
         true
     } catch (_: ActivityNotFoundException) {
@@ -53,13 +53,13 @@ class AppRepository(private val context: Context) {
         false
     }
 
-    fun loadIcon(app: AppInfo, density: Int): Drawable =
+    override fun loadIcon(app: AppInfo, density: Int): Drawable =
         launcherApps.getActivityList(app.component.packageName, app.user)
             .firstOrNull { it.componentName == app.component }?.getIcon(density)
             ?: context.packageManager.defaultActivityIcon
 
     /** Package name of the system default handler for a [defaultTileKeys] category. */
-    fun resolveDefault(category: String): String? {
+    override fun resolveDefault(category: String): String? {
         val intent = when (category) {
             "phone" -> Intent(Intent.ACTION_DIAL)
             "messaging" -> Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_MESSAGING)
@@ -70,5 +70,12 @@ class AppRepository(private val context: Context) {
         }
         return context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
             ?.activityInfo?.packageName?.takeIf { it != "android" }
+    }
+
+    override fun uninstall(app: AppInfo) {
+        val intent = Intent(Intent.ACTION_DELETE, android.net.Uri.parse("package:${app.component.packageName}"))
+            .putExtra(Intent.EXTRA_USER, app.user)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        try { context.startActivity(intent) } catch (_: ActivityNotFoundException) {}
     }
 }

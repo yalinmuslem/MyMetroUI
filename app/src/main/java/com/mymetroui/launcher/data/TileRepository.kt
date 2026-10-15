@@ -11,22 +11,22 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class TileRepository(private val dao: TileDao) {
+class TileRepository(private val dao: TileDao) : TileSource {
     private val lock = Mutex()
 
-    val tiles: Flow<List<Tile>> = dao.observeAll().map { TileLayout.sanitize(it.map(::toTile)) }
+    override val tiles: Flow<List<Tile>> = dao.observeAll().map { TileLayout.sanitize(it.map(::toTile)) }
 
-    suspend fun pin(key: String) = mutate { l ->
+    override suspend fun pin(key: String) = mutate { l ->
         if (l.any { it.key == key }) l else TileLayout.place(l, Tile(0, key, TileSize.MEDIUM, 0, 0))
     }
 
-    suspend fun unpin(id: Long) = mutate { l -> TileLayout.compact(l.filter { it.id != id }) }
-    suspend fun move(id: Long, col: Int, row: Int) = mutate { TileLayout.move(it, id, col, row) }
-    suspend fun resize(id: Long, size: TileSize) = mutate { TileLayout.resize(it, id, size) }
-    suspend fun removeKeys(keys: Set<String>) = mutate { l -> l.filter { it.key !in keys } }
-    suspend fun compact() = mutate { TileLayout.compact(it) }
-    suspend fun isEmpty(): Boolean = tiles.first().isEmpty()
-    suspend fun seed(keys: List<String>) = mutate { l ->
+    override suspend fun unpin(id: Long) = mutate { l -> TileLayout.compact(l.filter { it.id != id }) }
+    override suspend fun move(id: Long, col: Int, row: Int) = mutate { TileLayout.move(it, id, col, row) }
+    override suspend fun resize(id: Long, size: TileSize) = mutate { TileLayout.resize(it, id, size) }
+    override suspend fun removeKeys(keys: Set<String>) = mutate { l -> l.filter { it.key !in keys } }
+    override suspend fun compact() = mutate { TileLayout.compact(it) }
+    override suspend fun isEmpty(): Boolean = tiles.first().isEmpty()
+    override suspend fun seed(keys: List<String>) = mutate { l ->
         keys.fold(l) { acc, k -> if (acc.any { it.key == k }) acc else TileLayout.place(acc, Tile(0, k, TileSize.MEDIUM, 0, 0)) }
     }
 
