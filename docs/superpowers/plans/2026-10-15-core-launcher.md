@@ -39,7 +39,7 @@ settings.gradle.kts, build.gradle.kts, gradle/libs.versions.toml
 app/build.gradle.kts
 app/src/main/AndroidManifest.xml
 app/src/main/res/font/open_sans_*.ttf (+ values/strings.xml)
-app/src/main/java/com/tilestart/launcher/
+app/src/main/java/com/mymetroui/launcher/
   HomeActivity.kt
   domain/Tile.kt, TileLayout.kt
   data/AppInfo.kt, AppRepository.kt, TileRepository.kt, db/{TileEntity,TileDao,AppDatabase}.kt
@@ -57,7 +57,7 @@ app/src/androidTest/... Compose UI tests
 
 **Files:**
 - Create: Gradle files above, `app/src/main/AndroidManifest.xml`, `HomeActivity.kt`, `ui/theme/{Theme,Type}.kt`, font resources, `strings.xml`
-- Test: `app/src/test/java/com/tilestart/launcher/ManifestSmokeTest.kt`
+- Test: `app/src/test/java/com/mymetroui/launcher/ManifestSmokeTest.kt`
 
 **Interfaces:**
 - Produces: `@Composable fun MyMetroUITheme(content: @Composable () -> Unit)` (dark background, one accent `Color(0xFF1BA1E2)`, Open Sans typography); `HomeActivity` registered with `HOME` + `DEFAULT` + `LAUNCHER` categories, `launchMode="singleTask"`.
@@ -73,7 +73,7 @@ app/src/androidTest/... Compose UI tests
 
 **Files:**
 - Create: `domain/Tile.kt`, `domain/TileLayout.kt`
-- Test: `app/src/test/java/com/tilestart/launcher/domain/TileLayoutTest.kt`
+- Test: `app/src/test/java/com/mymetroui/launcher/domain/TileLayoutTest.kt`
 
 **Interfaces:**
 - Produces:
@@ -100,7 +100,7 @@ app/src/androidTest/... Compose UI tests
 
 **Files:**
 - Create: `data/db/{TileEntity,TileDao,AppDatabase}.kt`, `data/TileRepository.kt`
-- Test: `app/src/test/java/com/tilestart/launcher/data/TileRepositoryTest.kt` (Robolectric, in-memory Room)
+- Test: `app/src/test/java/com/mymetroui/launcher/data/TileRepositoryTest.kt` (Robolectric, in-memory Room)
 
 **Interfaces:**
 - Consumes: `Tile`, `TileSize`, `TileLayout.sanitize/compact/place/move/resize` (Task 2).
@@ -118,7 +118,7 @@ app/src/androidTest/... Compose UI tests
 
 **Files:**
 - Create: `data/AppInfo.kt`, `data/AppRepository.kt`, `data/DefaultTiles.kt`
-- Test: `app/src/test/java/com/tilestart/launcher/data/AppGroupingTest.kt`, `.../DefaultTilesTest.kt`
+- Test: `app/src/test/java/com/mymetroui/launcher/data/AppGroupingTest.kt`, `.../DefaultTilesTest.kt`
 
 **Interfaces:**
 - Produces:
@@ -137,7 +137,7 @@ app/src/androidTest/... Compose UI tests
 
 **Files:**
 - Create: `ui/StartViewModel.kt`, `ui/AppListViewModel.kt`
-- Test: `app/src/test/java/com/tilestart/launcher/ui/StartViewModelTest.kt`
+- Test: `app/src/test/java/com/mymetroui/launcher/ui/StartViewModelTest.kt`
 
 **Interfaces:**
 - Consumes: `TileRepository` (Task 3), `AppRepository`/`AppInfo` (Task 4). For testability both ViewModels take interfaces `TileSource`/`AppSource` that the repositories implement; tests use fakes.
@@ -156,7 +156,7 @@ app/src/androidTest/... Compose UI tests
 
 **Files:**
 - Create: `ui/motion/MotionSpec.kt`, `ui/motion/TileModifiers.kt`
-- Test: `app/src/test/java/com/tilestart/launcher/ui/motion/TiltMathTest.kt`
+- Test: `app/src/test/java/com/mymetroui/launcher/ui/motion/TiltMathTest.kt`
 
 **Interfaces:**
 - Produces:
@@ -174,7 +174,7 @@ app/src/androidTest/... Compose UI tests
 
 **Files:**
 - Create: `ui/home/HomeScreen.kt`, `ui/applist/{AppListScreen,JumpList,AppMenu}.kt`; modify `HomeActivity.kt`
-- Test: `app/src/androidTest/java/com/tilestart/launcher/ui/AppListScreenTest.kt`
+- Test: `app/src/androidTest/java/com/mymetroui/launcher/ui/AppListScreenTest.kt`
 
 **Interfaces:**
 - Consumes: `StartViewModel`, `AppListViewModel` (Task 5), `MyMetroUITheme`, `MotionSpec`.
@@ -193,7 +193,7 @@ app/src/androidTest/... Compose UI tests
 
 **Files:**
 - Create: `ui/start/{StartGrid,TileView}.kt`
-- Test: `app/src/androidTest/java/com/tilestart/launcher/ui/StartGridTest.kt`
+- Test: `app/src/androidTest/java/com/mymetroui/launcher/ui/StartGridTest.kt`
 
 **Interfaces:**
 - Consumes: `TileUi` (Task 5), `Modifier.tilt` (Task 6), `Tile`/`TileSize`.
@@ -211,7 +211,7 @@ app/src/androidTest/... Compose UI tests
 
 **Files:**
 - Create: `ui/start/EditOverlay.kt`; modify `StartGrid.kt`, `HomeScreen.kt`
-- Test: `app/src/androidTest/java/com/tilestart/launcher/ui/EditModeTest.kt`
+- Test: `app/src/androidTest/java/com/mymetroui/launcher/ui/EditModeTest.kt`
 
 **Interfaces:**
 - Consumes: `StartViewModel.move/resize/unpin/onEditFinished` (Task 5), `MotionSpec.Edit*`/`ReflowSpring` (Task 6), `StartGrid` (Task 8).
@@ -227,7 +227,7 @@ app/src/androidTest/... Compose UI tests
 
 **Files:**
 - Create: `ui/motion/Turnstile.kt`; modify `StartGrid.kt`, `HomeScreen.kt`, `HomeActivity.kt`
-- Test: `app/src/test/java/com/tilestart/launcher/ui/motion/TurnstileTimingTest.kt`
+- Test: `app/src/test/java/com/mymetroui/launcher/ui/motion/TurnstileTimingTest.kt`
 
 **Interfaces:**
 - Consumes: `MotionSpec.Turnstile*`/`FlyIn*`/`Parallax*` (Task 6), `StartGrid.onTileTap` (Task 8).
@@ -246,7 +246,7 @@ app/src/androidTest/... Compose UI tests
 
 **Files:**
 - Create: `ui/home/DefaultLauncherPrompt.kt`; modify `HomeActivity.kt`, `data/db/AppDatabase.kt`
-- Test: `app/src/test/java/com/tilestart/launcher/data/DatabaseFallbackTest.kt`, `app/src/androidTest/java/com/tilestart/launcher/ui/DefaultLauncherPromptTest.kt`
+- Test: `app/src/test/java/com/mymetroui/launcher/data/DatabaseFallbackTest.kt`, `app/src/androidTest/java/com/mymetroui/launcher/ui/DefaultLauncherPromptTest.kt`
 
 **Interfaces:**
 - Consumes: `AppDatabase.create` (Task 3), `HomeScreen` (Task 7).
@@ -261,7 +261,7 @@ app/src/androidTest/... Compose UI tests
 ### Task 12: End-to-end Start flow and release hygiene
 
 **Files:**
-- Create: `app/src/androidTest/java/com/tilestart/launcher/ui/PinUnpinFlowTest.kt`, `app/proguard-rules.pro` (Room keep rules if needed), `README.md`
+- Create: `app/src/androidTest/java/com/mymetroui/launcher/ui/PinUnpinFlowTest.kt`, `app/proguard-rules.pro` (Room keep rules if needed), `README.md`
 - Modify: `app/build.gradle.kts` (release `minifyEnabled = true`)
 
 **Interfaces:**
