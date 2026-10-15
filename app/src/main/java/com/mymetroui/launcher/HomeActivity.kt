@@ -5,7 +5,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import com.mymetroui.launcher.ui.home.DefaultLauncherPrompt
+import com.mymetroui.launcher.ui.home.defaultLauncherIntent
+import com.mymetroui.launcher.ui.home.isDefaultLauncher
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.mymetroui.launcher.ui.AppListViewModel
@@ -41,6 +52,10 @@ class HomeActivity : ComponentActivity() {
     private val start: StartViewModel by viewModels { factory }
     private val appList: AppListViewModel by viewModels { factory }
     private val events: HomeEvents by viewModels { factory }
+    private var isDefault by mutableStateOf(true)
+    private val roleRequest = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        isDefault = isDefaultLauncher(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,20 +63,28 @@ class HomeActivity : ComponentActivity() {
         val repo = (application as LauncherApp).appRepository
         setContent {
             MyMetroUITheme {
-                HomeScreen(
-                    start = start,
-                    appList = appList,
-                    homePresses = events.homePresses,
-                    resumes = events.resumes,
-                    onLaunchApp = { repo.launch(it, null) },
-                    loadIcon = { repo.loadIcon(it, resources.displayMetrics.densityDpi) },
-                )
+                Box(Modifier.fillMaxSize()) {
+                    HomeScreen(
+                        start = start,
+                        appList = appList,
+                        homePresses = events.homePresses,
+                        resumes = events.resumes,
+                        onLaunchApp = { repo.launch(it, null) },
+                        loadIcon = { repo.loadIcon(it, resources.displayMetrics.densityDpi) },
+                    )
+                    DefaultLauncherPrompt(
+                        isDefault = isDefault,
+                        onChoose = { roleRequest.launch(defaultLauncherIntent(this@HomeActivity)) },
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    )
+                }
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
+        isDefault = isDefaultLauncher(this)
         events.resumed()
     }
 
