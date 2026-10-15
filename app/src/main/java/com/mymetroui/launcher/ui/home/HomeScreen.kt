@@ -16,6 +16,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.statusBarsPadding
+import com.mymetroui.launcher.domain.next
+import com.mymetroui.launcher.ui.start.StartGrid
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,22 +41,36 @@ fun HomeScreen(
     start: StartViewModel,
     appList: AppListViewModel,
     homePresses: Flow<Unit> = emptyFlow(),
-    startPage: @Composable () -> Unit = {},
     onLaunchApp: (com.mymetroui.launcher.data.AppInfo) -> Unit = {},
-    loadIcon: ((com.mymetroui.launcher.data.AppInfo) -> android.graphics.drawable.Drawable)? = null,
+    loadIcon: (com.mymetroui.launcher.data.AppInfo) -> android.graphics.drawable.Drawable,
 ) {
     val pager = rememberPagerState(pageCount = { 2 })
     val scope = rememberCoroutineScope()
     val groups by appList.groups.collectAsState()
+    val tiles by start.state.collectAsState()
+    var editing by remember { mutableStateOf(false) }
+    val exitEdit = { editing = false; start.onEditFinished() }
 
     LaunchedEffect(homePresses) { homePresses.collect { pager.animateScrollToPage(0) } }
-    BackHandler(enabled = pager.currentPage == 1) { scope.launch { pager.animateScrollToPage(0) } }
+    BackHandler(enabled = editing, onBack = exitEdit)
+    BackHandler(enabled = !editing && pager.currentPage == 1) { scope.launch { pager.animateScrollToPage(0) } }
 
     Box(Modifier.fillMaxSize()) {
         HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
             if (page == 0) {
                 Box(Modifier.fillMaxSize()) {
-                    startPage()
+                    StartGrid(
+                        tiles = tiles,
+                        editing = editing,
+                        onTileTap = { ui, bounds -> start.launch(ui.app, bounds) },
+                        onTileLongPress = { editing = true },
+                        loadIcon = loadIcon,
+                        modifier = Modifier.fillMaxSize().statusBarsPadding(),
+                        onMove = start::move,
+                        onResize = { id -> tiles.firstOrNull { it.tile.id == id }?.let { start.resize(id, it.tile.size.next()) } },
+                        onUnpin = start::unpin,
+                        onExitEdit = exitEdit,
+                    )
                     Box(
                         Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(16.dp).size(44.dp)
                             .border(2.dp, Color.White, CircleShape)
