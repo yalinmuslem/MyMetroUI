@@ -1,0 +1,128 @@
+package com.mymetroui.launcher.ui.home
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
+import com.mymetroui.launcher.ui.motion.MotionSpec
+import com.mymetroui.launcher.ui.motion.TurnstileState
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.statusBarsPadding
+import com.mymetroui.launcher.domain.next
+import com.mymetroui.launcher.ui.start.StartGrid
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
+import com.mymetroui.launcher.ui.AppListViewModel
+import com.mymetroui.launcher.ui.StartViewModel
+import com.mymetroui.launcher.ui.applist.AppListScreen
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
+
+@Composable
+fun HomeScreen(
+    start: StartViewModel,
+    appList: AppListViewModel,
+    homePresses: Flow<Unit> = emptyFlow(),
+    resumes: Flow<Unit> = emptyFlow(),
+    onLaunchApp: (com.mymetroui.launcher.data.AppInfo) -> Unit = {},
+    loadIcon: (com.mymetroui.launcher.data.AppInfo) -> android.graphics.drawable.Drawable,
+) {
+    val pager = rememberPagerState(pageCount = { 2 })
+    val scope = rememberCoroutineScope()
+    val groups by appList.groups.collectAsState()
+    val tiles by start.state.collectAsState()
+    var editing by remember { mutableStateOf(false) }
+    val exitEdit = { editing = false; start.onEditFinished() }
+
+    val turnstile = remember { TurnstileState() }
+
+    // Home button: back to Start and fly the tiles in. Resume: swing tiles back in after an app launch.
+    LaunchedEffect(homePresses) {
+        homePresses.collect {
+            launch { turnstile.flyIn() }
+            pager.animateScrollToPage(0)
+        }
+    }
+    LaunchedEffect(resumes) { resumes.collect { turnstile.playIn() } }
+    BackHandler(enabled = editing, onBack = exitEdit)
+    BackHandler(enabled = !editing && pager.currentPage == 1) { scope.launch { pager.animateScrollToPage(0) } }
+
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        // Backdrop is wider than the screen and drifts slower than the pages.
+        val widthPx = with(LocalDensity.current) { maxWidth.toPx() }
+        Box(
+            Modifier.requiredWidth(maxWidth * 1.3f).fillMaxHeight()
+                .graphicsLayer {
+                    val page = pager.currentPage + pager.currentPageOffsetFraction
+                    translationX = -page * widthPx * MotionSpec.ParallaxBackgroundFactor
+                }
+                .background(Brush.horizontalGradient(listOf(Color.Black, Color(0xFF0A2A3A), Color.Black))),
+        )
+        HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
+            if (page == 0) {
+                Box(Modifier.fillMaxSize()) {
+                    StartGrid(
+                        tiles = tiles,
+                        editing = editing,
+                        onTileTap = { ui, bounds ->
+                            if (turnstile.progress == 0f) scope.launch {
+                                turnstile.playOut()
+                                // never leave the tiles swung out if the app could not be started
+                                if (!start.launch(ui.app, bounds)) turnstile.playIn()
+                            }
+                        },
+                        turnstile = turnstile,
+                        onTileLongPress = { editing = true },
+                        loadIcon = loadIcon,
+                        modifier = Modifier.fillMaxSize().statusBarsPadding(),
+                        onMove = start::move,
+                        onResize = { id -> tiles.firstOrNull { it.tile.id == id }?.let { start.resize(id, it.tile.size.next()) } },
+                        onUnpin = start::unpin,
+                        onExitEdit = exitEdit,
+                    )
+                    Box(
+                        Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(16.dp).size(44.dp)
+                            .border(2.dp, Color.White, CircleShape)
+                            .clickable { scope.launch { pager.animateScrollToPage(1) } }
+                            .testTag("to-app-list"),
+                        contentAlignment = Alignment.Center,
+                    ) { Text("→") }
+                }
+            } else {
+                AppListScreen(
+                    groups = groups,
+                    onLaunch = onLaunchApp,
+                    onPin = { appList.pin(it.key); scope.launch { pager.animateScrollToPage(0) } },
+                    onUninstall = appList::uninstall,
+                    loadIcon = loadIcon,
+                )
+            }
+        }
+    }
+}
