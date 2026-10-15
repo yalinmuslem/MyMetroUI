@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - `minSdk` 26; `targetSdk`/`compileSdk` 35.
-- Package/applicationId: `com.tilestart.launcher`; app label: `TileStart` (placeholder name, original; must not contain "Windows", "Phone" or Microsoft marks).
+- Package/applicationId: `com.mymetroui.launcher`; app label: `MyMetroUI` (placeholder name, original; must not contain "Windows", "Phone" or Microsoft marks).
 - No Microsoft assets: font is Open Sans (bundled, OFL), icons drawn by us, no Microsoft logos.
 - Grid is 4 columns; sizes SMALL 1×1, MEDIUM 2×2, WIDE 4×2; `col + width <= 4`; no overlaps; unique positions.
 - `componentKey` = `package/activity#userId`, unique per tile.
@@ -60,12 +60,12 @@ app/src/androidTest/... Compose UI tests
 - Test: `app/src/test/java/com/tilestart/launcher/ManifestSmokeTest.kt`
 
 **Interfaces:**
-- Produces: `@Composable fun TileStartTheme(content: @Composable () -> Unit)` (dark background, one accent `Color(0xFF1BA1E2)`, Open Sans typography); `HomeActivity` registered with `HOME` + `DEFAULT` + `LAUNCHER` categories, `launchMode="singleTask"`.
+- Produces: `@Composable fun MyMetroUITheme(content: @Composable () -> Unit)` (dark background, one accent `Color(0xFF1BA1E2)`, Open Sans typography); `HomeActivity` registered with `HOME` + `DEFAULT` + `LAUNCHER` categories, `launchMode="singleTask"`.
 
 - [ ] **Step 1:** Create the Gradle project with the stack versions above, one `app` module, Compose enabled, Room/KSP and test deps declared. Bundle Open Sans Regular/Light/SemiBold in `res/font`.
-- [ ] **Step 2: Write the failing test** `ManifestSmokeTest.homeActivityResolvesAsHome` (Robolectric): `PackageManager.resolveActivity(Intent(ACTION_MAIN).addCategory(CATEGORY_HOME), 0)` returns `com.tilestart.launcher.HomeActivity`.
+- [ ] **Step 2: Write the failing test** `ManifestSmokeTest.homeActivityResolvesAsHome` (Robolectric): `PackageManager.resolveActivity(Intent(ACTION_MAIN).addCategory(CATEGORY_HOME), 0)` returns `com.mymetroui.launcher.HomeActivity`.
 - [ ] **Step 3: Run** `./gradlew :app:testDebugUnitTest --tests "*ManifestSmokeTest*"` → Expected: FAIL (no activity registered).
-- [ ] **Step 4:** Implement manifest and `HomeActivity` (`enableEdgeToEdge()`, `setContent { TileStartTheme { Box(Modifier.fillMaxSize()) } }`), `TileStartTheme`.
+- [ ] **Step 4:** Implement manifest and `HomeActivity` (`enableEdgeToEdge()`, `setContent { MyMetroUITheme { Box(Modifier.fillMaxSize()) } }`), `MyMetroUITheme`.
 - [ ] **Step 5: Run** the test and `./gradlew :app:assembleDebug` → Expected: PASS / BUILD SUCCESSFUL.
 - [ ] **Step 6: Commit** `feat: project scaffold and HOME activity`
 
@@ -177,7 +177,7 @@ app/src/androidTest/... Compose UI tests
 - Test: `app/src/androidTest/java/com/tilestart/launcher/ui/AppListScreenTest.kt`
 
 **Interfaces:**
-- Consumes: `StartViewModel`, `AppListViewModel` (Task 5), `TileStartTheme`, `MotionSpec`.
+- Consumes: `StartViewModel`, `AppListViewModel` (Task 5), `MyMetroUITheme`, `MotionSpec`.
 - Produces:
   - `@Composable fun HomeScreen(start: StartViewModel, appList: AppListViewModel)` — `HorizontalPager(pageCount = 2)`; bottom-right circular arrow button on page 0 scrolls to page 1; `BackHandler` on page 1 scrolls to page 0.
   - `@Composable fun AppListScreen(groups: Map<Char, List<AppInfo>>, onLaunch: (AppInfo) -> Unit, onPin: (AppInfo) -> Unit, onUninstall: (AppInfo) -> Unit)`; letter headers; tap header → `JumpList` (4-column letter grid, letters without apps at alpha 0.3 and non-clickable, tap scrolls the `LazyColumn`); long-press app → `AppMenu` with "Pin to Start" and "Uninstall".

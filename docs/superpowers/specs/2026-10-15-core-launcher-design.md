@@ -29,7 +29,7 @@ Start screen dengan tile (small/medium/wide, pin/unpin, drag reorder, resize), a
 Satu modul `app`, package dipisah per tanggung jawab:
 
 ```
-com.<namaorisinal>.launcher/
+com.mymetroui.launcher/
 ├─ HomeActivity            Activity HOME, singleTask, edge-to-edge
 ├─ ui/
 │  ├─ home/                HomeScreen: HorizontalPager (Start | App list)
