@@ -20,6 +20,10 @@ class HomeEvents : ViewModel() {
     private val _homePresses = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val homePresses: SharedFlow<Unit> = _homePresses
     fun homePressed() { _homePresses.tryEmit(Unit) }
+
+    private val _resumes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val resumes: SharedFlow<Unit> = _resumes
+    fun resumed() { _resumes.tryEmit(Unit) }
 }
 
 class HomeActivity : ComponentActivity() {
@@ -48,11 +52,17 @@ class HomeActivity : ComponentActivity() {
                     start = start,
                     appList = appList,
                     homePresses = events.homePresses,
+                    resumes = events.resumes,
                     onLaunchApp = { repo.launch(it, null) },
                     loadIcon = { repo.loadIcon(it, resources.displayMetrics.densityDpi) },
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        events.resumed()
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -38,7 +38,11 @@ import com.mymetroui.launcher.data.AppInfo
 import com.mymetroui.launcher.domain.TileLayout
 import com.mymetroui.launcher.ui.TileUi
 import com.mymetroui.launcher.ui.motion.MotionSpec
+import com.mymetroui.launcher.ui.motion.TurnstileState
+import com.mymetroui.launcher.ui.motion.flyInProgress
 import com.mymetroui.launcher.ui.motion.tilt
+import com.mymetroui.launcher.ui.motion.turnstileAngle
+import androidx.compose.ui.graphics.TransformOrigin
 import kotlin.math.roundToInt
 
 private val Gap = 4.dp
@@ -55,11 +59,13 @@ fun StartGrid(
     onResize: (Long) -> Unit = {},
     onUnpin: (Long) -> Unit = {},
     onExitEdit: () -> Unit = {},
+    turnstile: TurnstileState? = null,
 ) {
     var selectedId by remember { mutableStateOf<Long?>(null) }
     var dragId by remember { mutableStateOf<Long?>(null) }
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
     LaunchedEffect(editing) { if (!editing) { selectedId = null; dragId = null } }
+    LaunchedEffect(tiles) { turnstile?.update(tiles.map { it.tile }) }
 
     BoxWithConstraints(modifier) {
         val cell = (maxWidth - Gap * (TileLayout.COLUMNS + 1)) / TileLayout.COLUMNS
@@ -120,7 +126,20 @@ fun StartGrid(
                         Modifier
                             .offset { if (dragging) pos + dragOffset.round() else pos }
                             .size(cell * t.size.w + Gap * (t.size.w - 1), cell * t.size.h + Gap * (t.size.h - 1))
-                            .graphicsLayer { scaleX = scale; scaleY = scale; this.alpha = alpha }
+                            .graphicsLayer {
+                                scaleX = scale; scaleY = scale; this.alpha = alpha
+                                turnstile?.let { ts ->
+                                    val angle = turnstileAngle(t, ts.turnElapsedMs)
+                                    if (angle != 0f) {
+                                        rotationY = angle
+                                        transformOrigin = TransformOrigin(0f, 0.5f)
+                                        cameraDistance = 12f * this.density
+                                    }
+                                    val fly = flyInProgress(t, ts.flyElapsedMs)
+                                    this.alpha = alpha * fly
+                                    translationY = (1f - fly) * size.height * 0.5f
+                                }
+                            }
                             .testTag("tile-${t.id}")
                             .onGloballyPositioned {
                                 val r = it.boundsInWindow().toAndroidRectF()

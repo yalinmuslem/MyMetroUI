@@ -3,7 +3,15 @@ package com.mymetroui.launcher.ui.home
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
+import com.mymetroui.launcher.ui.motion.MotionSpec
+import com.mymetroui.launcher.ui.motion.TurnstileState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -41,6 +49,7 @@ fun HomeScreen(
     start: StartViewModel,
     appList: AppListViewModel,
     homePresses: Flow<Unit> = emptyFlow(),
+    resumes: Flow<Unit> = emptyFlow(),
     onLaunchApp: (com.mymetroui.launcher.data.AppInfo) -> Unit = {},
     loadIcon: (com.mymetroui.launcher.data.AppInfo) -> android.graphics.drawable.Drawable,
 ) {
@@ -51,18 +60,44 @@ fun HomeScreen(
     var editing by remember { mutableStateOf(false) }
     val exitEdit = { editing = false; start.onEditFinished() }
 
-    LaunchedEffect(homePresses) { homePresses.collect { pager.animateScrollToPage(0) } }
+    val turnstile = remember { TurnstileState() }
+
+    // Home button: back to Start and fly the tiles in. Resume: swing tiles back in after an app launch.
+    LaunchedEffect(homePresses) {
+        homePresses.collect {
+            launch { turnstile.flyIn() }
+            pager.animateScrollToPage(0)
+        }
+    }
+    LaunchedEffect(resumes) { resumes.collect { turnstile.playIn() } }
     BackHandler(enabled = editing, onBack = exitEdit)
     BackHandler(enabled = !editing && pager.currentPage == 1) { scope.launch { pager.animateScrollToPage(0) } }
 
-    Box(Modifier.fillMaxSize()) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        // Backdrop is wider than the screen and drifts slower than the pages.
+        val widthPx = with(LocalDensity.current) { maxWidth.toPx() }
+        Box(
+            Modifier.requiredWidth(maxWidth * 1.3f).fillMaxHeight()
+                .graphicsLayer {
+                    val page = pager.currentPage + pager.currentPageOffsetFraction
+                    translationX = -page * widthPx * MotionSpec.ParallaxBackgroundFactor
+                }
+                .background(Brush.horizontalGradient(listOf(Color.Black, Color(0xFF0A2A3A), Color.Black))),
+        )
         HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
             if (page == 0) {
                 Box(Modifier.fillMaxSize()) {
                     StartGrid(
                         tiles = tiles,
                         editing = editing,
-                        onTileTap = { ui, bounds -> start.launch(ui.app, bounds) },
+                        onTileTap = { ui, bounds ->
+                            if (turnstile.progress == 0f) scope.launch {
+                                turnstile.playOut()
+                                // never leave the tiles swung out if the app could not be started
+                                if (!start.launch(ui.app, bounds)) turnstile.playIn()
+                            }
+                        },
+                        turnstile = turnstile,
                         onTileLongPress = { editing = true },
                         loadIcon = loadIcon,
                         modifier = Modifier.fillMaxSize().statusBarsPadding(),
