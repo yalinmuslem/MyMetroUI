@@ -46,7 +46,7 @@ Action Center, notification badges and Hubs are implemented. The Play Store list
 
 Not yet done: search, widgets.
 
-**Device testing:** a manual pass on a Samsung SM-A566B (Android 16) confirmed immersive mode (bars hidden, edge swipe reveals them, hidden again after returning from another app), Start, the app list, the welcome screen (screen off, unlock, swipe up), the Action Center panel, Settings, and pinning and opening the Photos hub. That pass found and fixed a start-up crash and two layout bugs. Still not verified on a device: notification access and badges, the Calendar live tile, the People and Quick settings hubs, picking photos, animation feel, and setting the launcher as the default home app.
+**Device testing:** a manual pass on a Samsung SM-A566B (Android 16) confirmed the Quick settings hub (flashlight toggle, brightness slider writes the system value), immersive mode (bars hidden, edge swipe reveals them, hidden again after returning from another app), Start, the app list, the welcome screen (screen off, unlock, swipe up), the Action Center panel, Settings, and pinning and opening the Photos hub. That pass found and fixed a start-up crash and two layout bugs. Still not verified on a device: notification access and badges, the Calendar live tile, the People hub, picking photos, animation feel, and setting the launcher as the default home app.
 
 ## Project layout
 
