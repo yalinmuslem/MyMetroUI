@@ -40,7 +40,7 @@ Judul besar tipis (`headlineLarge`), tombol tutup, isi kolom yang bisa digulir. 
 
 - **Photos** — grid dari `PhotoStore.uris()`, tap membuka foto lewat `ACTION_VIEW` (izin baca sudah dipersistenkan oleh picker). Tombol "Add photos" memakai picker yang ada. Thumbnail didekode dengan `BitmapFactory` + `inSampleSize` di latar, tanpa library baru, maksimal 60 foto. Keadaan kosong dan URI yang gagal dimuat ditangani (kotak kosong, tidak crash). Tanpa izin baru.
 - **Pengaturan cepat** — tombol Wi-Fi, Bluetooth, mode pesawat, lokasi (`QuickKind`), senter, kecerahan, dan tombol ke Settings (tema). Bagian cepat Action Center diekstrak menjadi komposabel `QuickSettingsSection` yang dipakai bersama oleh Action Center dan Hub ini.
-- **People** — `ContactsQuery` (antarmuka: `hasPermission()`, `contacts(): List<Contact>`) dengan implementasi `ContactsContract`. `Contact(id, lookupKey, name)`. Daftar urut nama; tap membuka kartu kontak (`ACTION_VIEW` pada `Contacts.getLookupUri`), ikon telepon memakai `ACTION_DIAL` (tanpa `CALL_PHONE`). Tanpa izin: tombol "Allow contacts access". Kosong: pesan "No contacts". `SecurityException` saat izin dicabut → diperlakukan sebagai tanpa izin. Data hanya di memori.
+- **People** — `ContactsQuery` (antarmuka: `hasPermission()`, `contacts(): List<Contact>`) dengan implementasi `ContactsContract`. `Contact(id, lookupKey, name)`. Daftar urut nama; tap membuka kartu kontak (`ACTION_VIEW` pada `Contacts.getLookupUri`); kartu kontak sudah memuat tombol telepon, jadi tidak ada tombol panggil sendiri dan nomor telepon tidak dibaca (tanpa `CALL_PHONE`). Tanpa izin: tombol "Allow contacts access". Kosong: pesan "No contacts". `SecurityException` saat izin dicabut → diperlakukan sebagai tanpa izin. Data hanya di memori.
 
 ### 4. Izin dan kebijakan
 
@@ -54,7 +54,7 @@ Satu izin baru: `READ_CONTACTS`, diminta saat menambah tile People atau membuka 
 - `HubScreenTest`: judul, tombol tutup memanggil callback.
 - `PhotosHubTest`: kosong, grid dengan tag per foto, tombol tambah, tap foto membuka.
 - `QuickSettingsHubTest` dan tes ActionCenter yang sudah ada tetap lulus setelah ekstraksi.
-- `PeopleHubTest` dengan `FakeContactsQuery`: tanpa izin, kosong, berisi (urut), tap kontak, ikon telepon.
+- `PeopleHubTest` dengan `FakeContactsQuery`: tanpa izin, kosong, berisi (urut), tap kontak.
 - `HomeScreen`: tap tile Hub membuka Hub; Back menutup. Settings: tombol Hub memanggil `onAddHub`, nonaktif bila tersemat.
 
 Tidak teruji pada perangkat nyata: kueri `ContactsContract` pada data kontak sungguhan, dekode thumbnail untuk foto besar/format langka, kartu kontak dan dialer pada aplikasi berbagai merek.
