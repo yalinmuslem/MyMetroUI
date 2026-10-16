@@ -99,10 +99,11 @@ fun HomeScreen(
                         tiles = tiles,
                         editing = editing,
                         onTileTap = { ui, bounds ->
-                            if (turnstile.progress == 0f) scope.launch {
+                            val app = ui.app
+                            if (app != null && turnstile.progress == 0f) scope.launch {
                                 turnstile.playOut()
                                 // never leave the tiles swung out if the app could not be started
-                                if (!start.launch(ui.app, bounds)) turnstile.playIn()
+                                if (!start.launch(app, bounds)) turnstile.playIn()
                             }
                         },
                         turnstile = turnstile,

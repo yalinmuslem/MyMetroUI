@@ -122,7 +122,7 @@ fun StartGrid(
 
                     TileView(
                         ui,
-                        remember(ui.app.key) { loadIcon(ui.app) },
+                        remember(ui.tile.key) { ui.app?.let(loadIcon) ?: android.graphics.drawable.ColorDrawable(0) },
                         Modifier
                             .offset { if (dragging) pos + dragOffset.round() else pos }
                             .size(cell * t.size.w + Gap * (t.size.w - 1), cell * t.size.h + Gap * (t.size.h - 1))
