@@ -148,3 +148,19 @@ class SettingsActionCenterButtonTest {
         assertEquals(1, opened)
     }
 }
+
+@RunWith(RobolectricTestRunner::class)
+class WelcomeSwitchTest {
+    @get:Rule val rule = createComposeRule()
+
+    @Test fun welcomeSwitch_togglesValue() {
+        val calls = mutableListOf<Boolean>()
+        rule.setContent {
+            MyMetroUITheme {
+                SettingsScreen(ThemeSettings(accentId = "red"), {}, {}, {}, welcomeEnabled = true, onWelcomeEnabled = { calls += it })
+            }
+        }
+        rule.onNodeWithTag("welcome-switch").performScrollTo().performClick()
+        assertEquals(listOf(false), calls)
+    }
+}

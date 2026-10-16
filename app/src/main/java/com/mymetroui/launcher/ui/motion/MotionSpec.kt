@@ -23,6 +23,8 @@ object MotionSpec {
     const val ActionCenterDurationMs = 300
     const val ActionCenterOpenFraction = 0.25f
 
+    const val WelcomeDurationMs = 300
+
     const val ParallaxTileFactor = 1.0f
     const val ParallaxBackgroundFactor = 0.3f
 

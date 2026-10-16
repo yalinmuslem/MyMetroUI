@@ -15,6 +15,11 @@
     <string name="live_photos">Photos</string>
     <string name="live_on_start">On Start</string>
     <string name="action_center">Action Center</string>
+    <string name="welcome_setting">Show welcome screen after screen off</string>
+    <plurals name="welcome_notifications">
+        <item quantity="one">%d notification</item>
+        <item quantity="other">%d notifications</item>
+    </plurals>
     <string name="clear_all">Clear all</string>
     <string name="no_notifications">No new notifications</string>
     <string name="grant_notification_access">Allow notification access to see notifications here</string>

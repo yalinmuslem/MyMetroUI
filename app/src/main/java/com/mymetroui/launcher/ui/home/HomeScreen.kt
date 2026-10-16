@@ -48,6 +48,8 @@ import com.mymetroui.launcher.ui.actioncenter.ActionCenterController
 import com.mymetroui.launcher.ui.actioncenter.ActionCenterHost
 import com.mymetroui.launcher.ui.actioncenter.rememberActionCenterHostState
 import androidx.compose.runtime.rememberCoroutineScope
+import com.mymetroui.launcher.ui.welcome.WelcomeScreen
+import com.mymetroui.launcher.ui.welcome.welcomeSummary
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -78,6 +80,10 @@ fun HomeScreen(
     onQuick: (QuickKind) -> Unit = {},
     onRequestWriteSettings: () -> Unit = {},
     onGrantAccess: () -> Unit = {},
+    welcomeVisible: Boolean = false,
+    onWelcomeDismiss: () -> Unit = {},
+    welcomeEnabled: Boolean = true,
+    onWelcomeEnabled: (Boolean) -> Unit = {},
 ) {
     val pager = rememberPagerState(pageCount = { 2 })
     val scope = rememberCoroutineScope()
@@ -104,6 +110,17 @@ fun HomeScreen(
     BackHandler(enabled = !editing && pager.currentPage == 1) { scope.launch { pager.animateScrollToPage(0) } }
     BackHandler(enabled = showSettings) { showSettings = false }
     BackHandler(enabled = panel.isOpen) { panel.close() } // registered last, so it wins
+    BackHandler(enabled = welcomeVisible, onBack = onWelcomeDismiss)
+    val panelState by controller.state.collectAsState()
+    val clockFace by remember(start) { start.live.face(LiveKind.CLOCK) }.collectAsState(null)
+    val calendarFace by remember(start) { start.live.face(LiveKind.CALENDAR) }.collectAsState(null)
+    LaunchedEffect(welcomeVisible) {
+        if (welcomeVisible) {
+            editing = false; showSettings = false; panel.close()
+            controller.refresh()
+            pager.scrollToPage(0)
+        }
+    }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // Backdrop is wider than the screen and drifts slower than the pages.
@@ -178,16 +195,26 @@ fun HomeScreen(
                 pinnedLive = tiles.mapNotNull { (it.content as? TileContent.Live)?.kind }.toSet(),
                 onAddLive = onAddLive,
                 onOpenActionCenter = { showSettings = false; panel.open() },
+                welcomeEnabled = welcomeEnabled,
+                onWelcomeEnabled = onWelcomeEnabled,
             )
         }
         ActionCenterHost(
             host = panel,
             controller = controller,
-            canOpen = !editing && turnstile.progress == 0f,
+            canOpen = !editing && turnstile.progress == 0f && !welcomeVisible,
             onOpenNotification = onOpenNotification,
             onQuick = onQuick,
             onRequestWriteSettings = onRequestWriteSettings,
             onGrantAccess = onGrantAccess,
         )
+        if (welcomeVisible) {
+            WelcomeScreen(
+                clock = clockFace as? LiveFace.Text,
+                calendar = calendarFace,
+                summary = welcomeSummary(panelState.items, panelState.connected, panelState.deviceLocked),
+                onDismiss = { onWelcomeDismiss(); scope.launch { turnstile.flyIn() } },
+            )
+        }
     }
 }
