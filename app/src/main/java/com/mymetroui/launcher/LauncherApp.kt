@@ -19,6 +19,7 @@ import com.mymetroui.launcher.data.live.PhotosSource
 import com.mymetroui.launcher.data.AppRepository
 import com.mymetroui.launcher.data.ThemeRepository
 import com.mymetroui.launcher.data.WelcomePrefs
+import com.mymetroui.launcher.data.ImmersivePrefs
 import com.mymetroui.launcher.ui.welcome.WelcomeGate
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -46,6 +47,7 @@ class LauncherApp : Application() {
     }
     val welcomePrefs by lazy { WelcomePrefs(getSharedPreferences("welcome", MODE_PRIVATE)) }
     val welcomeGate = WelcomeGate { welcomePrefs.enabled.value }
+    val immersivePrefs by lazy { ImmersivePrefs(getSharedPreferences("immersive", MODE_PRIVATE)) }
     val photoStore by lazy { PhotoStore(getSharedPreferences("photos", MODE_PRIVATE)) }
     val liveSource: LiveTileSource by lazy {
         CompositeLiveSource(

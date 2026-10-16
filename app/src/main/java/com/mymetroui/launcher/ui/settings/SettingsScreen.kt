@@ -48,6 +48,8 @@ fun SettingsScreen(
     onWelcomeEnabled: (Boolean) -> Unit = {},
     pinnedHubs: Set<HubKind> = emptySet(),
     onAddHub: (HubKind) -> Unit = {},
+    immersiveEnabled: Boolean = false,
+    onImmersiveEnabled: (Boolean) -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
     Column(
@@ -85,13 +87,8 @@ fun SettingsScreen(
                 .padding(horizontal = 20.dp, vertical = 12.dp).testTag("open-action-center"),
             color = scheme.onPrimary,
         )
-        Row(
-            Modifier.fillMaxWidth().padding(top = 24.dp).clickable { onWelcomeEnabled(!welcomeEnabled) }.testTag("welcome-switch"),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(stringResource(R.string.welcome_setting), Modifier.weight(1f))
-            Switch(checked = welcomeEnabled, onCheckedChange = null)
-        }
+        SwitchRow("welcome-switch", stringResource(R.string.welcome_setting), welcomeEnabled, onWelcomeEnabled)
+        SwitchRow("immersive-switch", stringResource(R.string.immersive_setting), immersiveEnabled, onImmersiveEnabled)
         Text(stringResource(R.string.live_tiles), Modifier.padding(top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleMedium)
         LiveKind.values().forEach { kind ->
             val isPinned = kind in pinnedLive
@@ -139,4 +136,15 @@ private fun liveLabel(kind: LiveKind): Int = when (kind) {
     LiveKind.CLOCK -> R.string.live_clock
     LiveKind.CALENDAR -> R.string.live_calendar
     LiveKind.PHOTOS -> R.string.live_photos
+}
+
+@Composable
+private fun SwitchRow(tag: String, label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().padding(top = 24.dp).clickable { onChange(!checked) }.testTag(tag),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, Modifier.weight(1f))
+        Switch(checked = checked, onCheckedChange = null)
+    }
 }

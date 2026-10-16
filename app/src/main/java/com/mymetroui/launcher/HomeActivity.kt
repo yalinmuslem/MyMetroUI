@@ -49,6 +49,9 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import android.os.PowerManager
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import android.net.Uri
 import android.provider.ContactsContract
 import androidx.compose.runtime.getValue
@@ -167,6 +170,8 @@ class HomeActivity : ComponentActivity() {
             val notifications by app.notificationRepository.items.collectAsState()
             val welcomeVisible by events.welcomeVisible.collectAsState()
             val welcomeEnabled by app.welcomePrefs.enabled.collectAsState()
+            val immersive by app.immersivePrefs.enabled.collectAsState()
+            LaunchedEffect(immersive) { applyImmersive(immersive) }
             LaunchedEffect(themeSettings.mode) { applySystemBars(themeSettings.mode) }
             MyMetroUITheme(themeSettings) {
                 Box(Modifier.fillMaxSize()) {
@@ -191,6 +196,8 @@ class HomeActivity : ComponentActivity() {
                         welcomeEnabled = welcomeEnabled,
                         onWelcomeEnabled = app.welcomePrefs::setEnabled,
                         onAddHub = hubAdder::add,
+                        immersiveEnabled = immersive,
+                        onImmersiveEnabled = app.immersivePrefs::setEnabled,
                         hubs = hubActions.copy(contactsVersion = contactsVersion),
                     )
                     DefaultLauncherPrompt(
@@ -240,6 +247,23 @@ class HomeActivity : ComponentActivity() {
         isDefault = isDefaultLauncher(this)
         events.resumed()
         if ((application as LauncherApp).welcomeGate.onResume()) events.showWelcome()
+        applyImmersive((application as LauncherApp).immersivePrefs.enabled.value)
+    }
+
+    // Bars come back after other apps or dialogs take focus, so this also runs on focus changes.
+    private fun applyImmersive(on: Boolean) {
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        if (on) {
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+        } else {
+            controller.show(WindowInsetsCompat.Type.systemBars())
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) applyImmersive((application as LauncherApp).immersivePrefs.enabled.value)
     }
 
     override fun onPause() {

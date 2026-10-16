@@ -92,6 +92,8 @@ fun HomeScreen(
     welcomeEnabled: Boolean = true,
     onWelcomeEnabled: (Boolean) -> Unit = {},
     onAddHub: (HubKind) -> Unit = {},
+    immersiveEnabled: Boolean = false,
+    onImmersiveEnabled: (Boolean) -> Unit = {},
     hubs: HubActions = HubActions(),
 ) {
     val pager = rememberPagerState(pageCount = { 2 })
@@ -209,6 +211,8 @@ fun HomeScreen(
                 onOpenActionCenter = { showSettings = false; panel.open() },
                 pinnedHubs = tiles.mapNotNull { (it.content as? TileContent.Hub)?.kind }.toSet(),
                 onAddHub = onAddHub,
+                immersiveEnabled = immersiveEnabled,
+                onImmersiveEnabled = onImmersiveEnabled,
                 welcomeEnabled = welcomeEnabled,
                 onWelcomeEnabled = onWelcomeEnabled,
             )
