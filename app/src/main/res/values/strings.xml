@@ -16,6 +16,10 @@
     <string name="live_on_start">On Start</string>
     <string name="action_center">Action Center</string>
     <string name="hubs">Hubs</string>
+    <string name="people_allow">Allow contacts access</string>
+    <string name="people_empty">No contacts</string>
+    <string name="photos_add">Add photos</string>
+    <string name="photos_empty">No photos yet</string>
     <string name="hub_people">People</string>
     <string name="hub_photos">Photos</string>
     <string name="hub_settings">Settings</string>

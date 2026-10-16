@@ -51,6 +51,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import com.mymetroui.launcher.data.hub.HubKind
 import com.mymetroui.launcher.ui.actioncenter.ActionCenterActions
 import com.mymetroui.launcher.ui.hubs.HubScreen
+import com.mymetroui.launcher.ui.hubs.HubActions
+import com.mymetroui.launcher.ui.hubs.PhotosHub
+import com.mymetroui.launcher.ui.hubs.PeopleHub
 import com.mymetroui.launcher.ui.hubs.QuickSettingsHub
 import com.mymetroui.launcher.ui.welcome.WelcomeScreen
 import com.mymetroui.launcher.ui.welcome.welcomeSummary
@@ -89,6 +92,7 @@ fun HomeScreen(
     welcomeEnabled: Boolean = true,
     onWelcomeEnabled: (Boolean) -> Unit = {},
     onAddHub: (HubKind) -> Unit = {},
+    hubs: HubActions = HubActions(),
 ) {
     val pager = rememberPagerState(pageCount = { 2 })
     val scope = rememberCoroutineScope()
@@ -211,6 +215,7 @@ fun HomeScreen(
         }
         openHub?.let { kind ->
             HubScreen(kind, onClose = { openHub = null }, scrollable = kind == HubKind.SETTINGS) {
+                val photoVersion by (hubs.photoStore?.changes ?: remember { kotlinx.coroutines.flow.MutableStateFlow(0) }).collectAsState()
                 when (kind) {
                     HubKind.SETTINGS -> QuickSettingsHub(
                         panelState,
@@ -221,7 +226,11 @@ fun HomeScreen(
                         ),
                         onOpenSettings = { openHub = null; showSettings = true },
                     )
-                    HubKind.PHOTOS, HubKind.PEOPLE -> Text("…", Modifier.testTag("hub-todo-${kind.name.lowercase()}"))
+                    HubKind.PHOTOS -> PhotosHub(
+                        remember(photoVersion) { hubs.photoStore?.uris().orEmpty() },
+                        hubs.loadThumbnail, hubs.onOpenPhoto, hubs.onAddPhotos,
+                    )
+                    HubKind.PEOPLE -> hubs.contacts?.let { PeopleHub(it, hubs.contactsVersion, hubs.onRequestContacts, hubs.onOpenContact) }
                 }
             }
         }
