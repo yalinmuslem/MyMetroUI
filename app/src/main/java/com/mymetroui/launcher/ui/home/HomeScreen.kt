@@ -48,6 +48,13 @@ import com.mymetroui.launcher.ui.actioncenter.ActionCenterController
 import com.mymetroui.launcher.ui.actioncenter.ActionCenterHost
 import com.mymetroui.launcher.ui.actioncenter.rememberActionCenterHostState
 import androidx.compose.runtime.rememberCoroutineScope
+import com.mymetroui.launcher.data.hub.HubKind
+import com.mymetroui.launcher.ui.actioncenter.ActionCenterActions
+import com.mymetroui.launcher.ui.hubs.HubScreen
+import com.mymetroui.launcher.ui.hubs.HubActions
+import com.mymetroui.launcher.ui.hubs.PhotosHub
+import com.mymetroui.launcher.ui.hubs.PeopleHub
+import com.mymetroui.launcher.ui.hubs.QuickSettingsHub
 import com.mymetroui.launcher.ui.welcome.WelcomeScreen
 import com.mymetroui.launcher.ui.welcome.welcomeSummary
 import androidx.compose.ui.Alignment
@@ -84,6 +91,8 @@ fun HomeScreen(
     onWelcomeDismiss: () -> Unit = {},
     welcomeEnabled: Boolean = true,
     onWelcomeEnabled: (Boolean) -> Unit = {},
+    onAddHub: (HubKind) -> Unit = {},
+    hubs: HubActions = HubActions(),
 ) {
     val pager = rememberPagerState(pageCount = { 2 })
     val scope = rememberCoroutineScope()
@@ -91,6 +100,7 @@ fun HomeScreen(
     val tiles by start.state.collectAsState()
     val themeSettings by theme.settings.collectAsState()
     var showSettings by remember { mutableStateOf(false) }
+    var openHub by remember { mutableStateOf<HubKind?>(null) }
     var editing by remember { mutableStateOf(false) }
     val exitEdit = { editing = false; start.onEditFinished() }
 
@@ -110,13 +120,14 @@ fun HomeScreen(
     BackHandler(enabled = !editing && pager.currentPage == 1) { scope.launch { pager.animateScrollToPage(0) } }
     BackHandler(enabled = showSettings) { showSettings = false }
     BackHandler(enabled = panel.isOpen) { panel.close() } // registered last, so it wins
+    BackHandler(enabled = openHub != null) { openHub = null }
     BackHandler(enabled = welcomeVisible, onBack = onWelcomeDismiss)
     val panelState by controller.state.collectAsState()
     val clockFace by remember(start) { start.live.face(LiveKind.CLOCK) }.collectAsState(null)
     val calendarFace by remember(start) { start.live.face(LiveKind.CALENDAR) }.collectAsState(null)
     LaunchedEffect(welcomeVisible) {
         if (welcomeVisible) {
-            editing = false; showSettings = false; panel.close()
+            editing = false; showSettings = false; openHub = null; panel.close()
             controller.refresh()
             pager.scrollToPage(0)
         }
@@ -141,6 +152,7 @@ fun HomeScreen(
                         tiles = tiles,
                         editing = editing,
                         onTileTap = { ui, bounds ->
+                            if (!editing) (ui.content as? TileContent.Hub)?.kind?.let { openHub = it }
                             val app = ui.app
                             if (app != null && turnstile.progress == 0f) scope.launch {
                                 turnstile.playOut()
@@ -195,9 +207,32 @@ fun HomeScreen(
                 pinnedLive = tiles.mapNotNull { (it.content as? TileContent.Live)?.kind }.toSet(),
                 onAddLive = onAddLive,
                 onOpenActionCenter = { showSettings = false; panel.open() },
+                pinnedHubs = tiles.mapNotNull { (it.content as? TileContent.Hub)?.kind }.toSet(),
+                onAddHub = onAddHub,
                 welcomeEnabled = welcomeEnabled,
                 onWelcomeEnabled = onWelcomeEnabled,
             )
+        }
+        openHub?.let { kind ->
+            HubScreen(kind, onClose = { openHub = null }, scrollable = kind == HubKind.SETTINGS) {
+                val photoVersion by (hubs.photoStore?.changes ?: remember { kotlinx.coroutines.flow.MutableStateFlow(0) }).collectAsState()
+                when (kind) {
+                    HubKind.SETTINGS -> QuickSettingsHub(
+                        panelState,
+                        ActionCenterActions(
+                            onQuick = onQuick, onTorch = controller::setTorch, onBrightness = controller::setBrightness,
+                            onRequestWriteSettings = onRequestWriteSettings, onDismiss = {}, onClearAll = {},
+                            onOpen = {}, onGrantAccess = onGrantAccess, onClose = {},
+                        ),
+                        onOpenSettings = { openHub = null; showSettings = true },
+                    )
+                    HubKind.PHOTOS -> PhotosHub(
+                        remember(photoVersion) { hubs.photoStore?.uris().orEmpty() },
+                        hubs.loadThumbnail, hubs.onOpenPhoto, hubs.onAddPhotos,
+                    )
+                    HubKind.PEOPLE -> hubs.contacts?.let { PeopleHub(it, hubs.contactsVersion, hubs.onRequestContacts, hubs.onOpenContact) }
+                }
+            }
         }
         ActionCenterHost(
             host = panel,

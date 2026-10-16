@@ -27,6 +27,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mymetroui.launcher.R
 import com.mymetroui.launcher.data.ThemeMode
+import com.mymetroui.launcher.data.hub.HubKind
+import com.mymetroui.launcher.ui.hubs.hubLabel
 import com.mymetroui.launcher.data.live.LiveKind
 import com.mymetroui.launcher.data.ThemeSettings
 import com.mymetroui.launcher.ui.theme.Accents
@@ -42,6 +44,8 @@ fun SettingsScreen(
     onOpenActionCenter: () -> Unit = {},
     welcomeEnabled: Boolean = true,
     onWelcomeEnabled: (Boolean) -> Unit = {},
+    pinnedHubs: Set<HubKind> = emptySet(),
+    onAddHub: (HubKind) -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
     Column(
@@ -97,6 +101,20 @@ fun SettingsScreen(
                     .padding(horizontal = 20.dp, vertical = 12.dp),
             ) {
                 Text(stringResource(liveLabel(kind)), Modifier.weight(1f), color = if (isPinned) scheme.onSurfaceVariant else scheme.onPrimary)
+                if (isPinned) Text(stringResource(R.string.live_on_start), color = scheme.onSurfaceVariant)
+            }
+        }
+        Text(stringResource(R.string.hubs), Modifier.padding(top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleMedium)
+        HubKind.values().forEach { kind ->
+            val isPinned = kind in pinnedHubs
+            Row(
+                Modifier.padding(vertical = 4.dp)
+                    .background(if (isPinned) scheme.surfaceVariant else scheme.primary)
+                    .testTag("hub-add-${kind.name.lowercase()}")
+                    .clickable(enabled = !isPinned) { onAddHub(kind) }
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+            ) {
+                Text(stringResource(hubLabel(kind)), Modifier.weight(1f), color = if (isPinned) scheme.onSurfaceVariant else scheme.onPrimary)
                 if (isPinned) Text(stringResource(R.string.live_on_start), color = scheme.onSurfaceVariant)
             }
         }

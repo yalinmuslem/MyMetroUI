@@ -30,6 +30,7 @@ or go to *Settings > Apps > Default apps > Home app* and pick MyMetroUI.
 - Open **Settings** (last row of the app list) to pick an accent color and dark/light mode; the choice is saved on the device.
 - **Action Center:** drag down from the very top edge (or use Settings > Action Center) to see notifications, open Wi-Fi/Bluetooth/airplane/location settings, toggle the flashlight and set brightness. Notifications appear only after you enable MyMetroUI under *Settings > Notifications > Device & app notifications* (notification access); brightness needs the "Modify system settings" permission. Notification content stays in memory on the device and is never stored or sent anywhere. Tiles show a count badge for unread notifications.
 - **Welcome screen:** after the screen turns off and on with the launcher in front, a first page shows a big clock, date, next calendar event and a notification summary; swipe up to reach Start. It is display-only and not a security lock (your PIN/biometric stays with the system), needs no extra permissions, and can be switched off in Settings. Not verified on a real device: screen-off ordering on different manufacturers and behaviour right after the system keyguard is dismissed.
+- **Hubs:** in *Settings > Hubs* pin a Photos, Quick settings or People tile to Start; tapping it opens that hub full-screen (Back closes). Photos shows the pictures you picked (no media permission); Quick settings gathers the Action Center toggles; People lists contacts and opens the contact card, and is the only feature that asks for `READ_CONTACTS`. Contact data stays in memory only. Not verified on a real device: the contacts query on real data, decoding of very large photos, and the contact card and photo viewer across manufacturers.
 - In **Settings > Live tiles** add a Clock, Calendar or Photos tile. Live tiles flip every few seconds (medium and wide sizes only). Calendar asks for calendar access when added; Photos opens a picker, so no broad photo permission is needed. Remove them with unpin in edit mode.
 
 ## Status
@@ -40,9 +41,9 @@ and database recovery. Work profiles are supported (a tile's key includes the us
 
 Theme (accent palette + dark/light) and live tiles (clock, calendar, photos with flip) are implemented.
 
-Action Center and notification badges are implemented. Play Store listing must disclose the notification-listener use.
+Action Center, notification badges and Hubs are implemented. The Play Store listing must disclose the notification-listener use and the contacts access (People hub).
 
-Not yet done: Hubs, search, widgets.
+Not yet done: search, widgets.
 
 ## Project layout
 

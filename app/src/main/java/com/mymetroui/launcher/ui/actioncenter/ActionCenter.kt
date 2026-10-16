@@ -31,26 +31,7 @@ import com.mymetroui.launcher.data.quick.QuickKind
 fun ActionCenter(state: ActionCenterState, actions: ActionCenterActions, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     Column(modifier.fillMaxWidth().background(scheme.surfaceVariant).statusBarsPadding().padding(16.dp)) {
-        Row(Modifier.fillMaxWidth()) {
-            QuickKind.values().forEach { kind ->
-                QuickButton("quick-${kind.name.lowercase()}", stringResource(quickLabel(kind)), enabled = true, on = false) {
-                    actions.onQuick(kind)
-                }
-            }
-            QuickButton("torch-toggle", stringResource(R.string.torch), enabled = state.torchAvailable, on = state.torchOn) {
-                actions.onTorch(!state.torchOn)
-            }
-        }
-
-        Box(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
-            if (state.canWriteSettings) {
-                Slider(state.brightness, actions.onBrightness, Modifier.testTag("brightness-slider"))
-            } else {
-                // without WRITE_SETTINGS the slider cannot write; touching it opens the access screen instead
-                Slider(state.brightness, {}, Modifier.fillMaxWidth(), enabled = false)
-                Box(Modifier.matchParentSize().clickable(onClick = actions.onRequestWriteSettings).testTag("brightness-slider"))
-            }
-        }
+        QuickSettingsSection(state, actions)
 
         when {
             !state.connected -> Text(
@@ -118,4 +99,29 @@ private fun quickLabel(kind: QuickKind): Int = when (kind) {
     QuickKind.BLUETOOTH -> R.string.quick_bluetooth
     QuickKind.AIRPLANE -> R.string.quick_airplane
     QuickKind.LOCATION -> R.string.quick_location
+}
+
+/** Quick-setting buttons, torch and brightness; shared by the Action Center and the Quick settings hub. */
+@Composable
+fun QuickSettingsSection(state: ActionCenterState, actions: ActionCenterActions) {
+    Row(Modifier.fillMaxWidth()) {
+        QuickKind.values().forEach { kind ->
+            QuickButton("quick-${kind.name.lowercase()}", stringResource(quickLabel(kind)), enabled = true, on = false) {
+                actions.onQuick(kind)
+            }
+        }
+        QuickButton("torch-toggle", stringResource(R.string.torch), enabled = state.torchAvailable, on = state.torchOn) {
+            actions.onTorch(!state.torchOn)
+        }
+    }
+
+    Box(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+        if (state.canWriteSettings) {
+            Slider(state.brightness, actions.onBrightness, Modifier.testTag("brightness-slider"))
+        } else {
+            // without WRITE_SETTINGS the slider cannot write; touching it opens the access screen instead
+            Slider(state.brightness, {}, Modifier.fillMaxWidth(), enabled = false)
+            Box(Modifier.matchParentSize().clickable(onClick = actions.onRequestWriteSettings).testTag("brightness-slider"))
+        }
+    }
 }

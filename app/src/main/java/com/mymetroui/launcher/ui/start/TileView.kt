@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.mymetroui.launcher.data.hub.HubKind
 import com.mymetroui.launcher.domain.TileSize
 import com.mymetroui.launcher.ui.TileContent
 import com.mymetroui.launcher.ui.TileUi
@@ -35,7 +36,11 @@ fun TileView(ui: TileUi, icon: Drawable, modifier: Modifier = Modifier, badge: I
                 maxLines = 1,
             )
         }
-        Box(Modifier.align(Alignment.Center)) { DrawableImage(icon, if (small) 28.dp else 48.dp) }
+        val hub = (ui.content as? TileContent.Hub)?.kind
+        Box(Modifier.align(Alignment.Center)) {
+            if (hub != null) Text(hubGlyph(hub), style = MaterialTheme.typography.headlineLarge)
+            else DrawableImage(icon, if (small) 28.dp else 48.dp)
+        }
         if (!small) {
             Text(
                 tileLabel(ui),
@@ -51,9 +56,16 @@ fun TileView(ui: TileUi, icon: Drawable, modifier: Modifier = Modifier, badge: I
 private fun tileLabel(ui: TileUi): String = when (val c = ui.content) {
     is TileContent.App -> c.app.label
     is TileContent.Live -> c.kind.name.lowercase().replaceFirstChar { it.uppercase() }
+    is TileContent.Hub -> c.kind.name.lowercase().replaceFirstChar { it.uppercase() }
 }
 
 private fun badgeLabel(count: Int, small: Boolean): String = when {
     small -> if (count > 9) "9+" else count.toString()
     else -> if (count > 99) "99+" else count.toString()
+}
+
+private fun hubGlyph(kind: HubKind): String = when (kind) {
+    HubKind.PEOPLE -> "P"
+    HubKind.PHOTOS -> "G"
+    HubKind.SETTINGS -> "S"
 }

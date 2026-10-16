@@ -49,6 +49,15 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import android.os.PowerManager
+import android.net.Uri
+import android.provider.ContactsContract
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import com.mymetroui.launcher.data.hub.ContentResolverContactsQuery
+import com.mymetroui.launcher.data.hub.HubTileAdder
+import com.mymetroui.launcher.ui.hubs.HubActions
+import com.mymetroui.launcher.ui.hubs.decodeThumbnail
 
 /** Carries "Home pressed" events from onNewIntent to the Compose tree. */
 class HomeEvents : ViewModel() {
@@ -84,6 +93,42 @@ class HomeActivity : ComponentActivity() {
     private var isDefault by mutableStateOf(true)
     private var calendarResult: ((Boolean) -> Unit)? = null
     private var photoResult: ((List<String>) -> Unit)? = null
+    private var contactsResult: ((Boolean) -> Unit)? = null
+    private var contactsVersion by mutableIntStateOf(0)
+    private val contactsPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        contactsResult?.invoke(granted)
+        contactsResult = null
+        contactsVersion++
+    }
+    private val hubAdder by lazy {
+        HubTileAdder(
+            pinned = { start.state.value.mapNotNull { (it.content as? TileContent.Hub)?.kind }.toSet() },
+            requestContacts = { cb ->
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) cb(true)
+                else { contactsResult = cb; contactsPermission.launch(Manifest.permission.READ_CONTACTS) }
+            },
+            pin = start::addHub,
+        )
+    }
+    private val hubActions by lazy {
+        val app = application as LauncherApp
+        HubActions(
+            photoStore = app.photoStore,
+            loadThumbnail = { uri -> decodeThumbnail({ contentResolver.openInputStream(Uri.parse(uri)) }, uri) },
+            onOpenPhoto = { uri ->
+                launchSafely(Intent(Intent.ACTION_VIEW).setDataAndType(Uri.parse(uri), "image/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
+            },
+            onAddPhotos = {
+                photoResult = { uris -> if (uris.isNotEmpty()) app.photoStore.add(uris) }
+                photoPicker.launch(arrayOf("image/*"))
+            },
+            contacts = ContentResolverContactsQuery(this),
+            onRequestContacts = { contactsPermission.launch(Manifest.permission.READ_CONTACTS) },
+            onOpenContact = { c ->
+                launchSafely(Intent(Intent.ACTION_VIEW, ContactsContract.Contacts.getLookupUri(c.id, c.lookupKey)))
+            },
+        )
+    }
     private val calendarPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         calendarResult?.invoke(granted)
         calendarResult = null
@@ -145,6 +190,8 @@ class HomeActivity : ComponentActivity() {
                         onWelcomeDismiss = events::dismissWelcome,
                         welcomeEnabled = welcomeEnabled,
                         onWelcomeEnabled = app.welcomePrefs::setEnabled,
+                        onAddHub = hubAdder::add,
+                        hubs = hubActions.copy(contactsVersion = contactsVersion),
                     )
                     DefaultLauncherPrompt(
                         isDefault = isDefault,
