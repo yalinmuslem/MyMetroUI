@@ -20,6 +20,9 @@ object MotionSpec {
     const val FlipIntervalMs = 9000
     const val FlipStaggerMs = 700
 
+    const val ActionCenterDurationMs = 300
+    const val ActionCenterOpenFraction = 0.25f
+
     const val ParallaxTileFactor = 1.0f
     const val ParallaxBackgroundFactor = 0.3f
 

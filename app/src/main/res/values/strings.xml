@@ -14,4 +14,13 @@
     <string name="live_calendar">Calendar</string>
     <string name="live_photos">Photos</string>
     <string name="live_on_start">On Start</string>
+    <string name="action_center">Action Center</string>
+    <string name="clear_all">Clear all</string>
+    <string name="no_notifications">No new notifications</string>
+    <string name="grant_notification_access">Allow notification access to see notifications here</string>
+    <string name="quick_wifi">Wi-Fi</string>
+    <string name="quick_bluetooth">Bluetooth</string>
+    <string name="quick_airplane">Airplane</string>
+    <string name="quick_location">Location</string>
+    <string name="torch">Flashlight</string>
 </resources>
