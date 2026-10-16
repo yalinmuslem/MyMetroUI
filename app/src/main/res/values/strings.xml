@@ -24,6 +24,7 @@
     <string name="hub_photos">Photos</string>
     <string name="hub_settings">Settings</string>
     <string name="welcome_setting">Show welcome screen after screen off</string>
+    <string name="immersive_setting">Hide status and navigation bars on Start</string>
     <plurals name="welcome_notifications">
         <item quantity="one">%d notification</item>
         <item quantity="other">%d notifications</item>

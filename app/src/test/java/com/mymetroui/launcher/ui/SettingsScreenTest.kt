@@ -185,3 +185,19 @@ class HubSettingsTest {
         rule.onNodeWithTag("hub-add-people").performScrollTo().assertIsNotEnabled()
     }
 }
+
+@RunWith(RobolectricTestRunner::class)
+class ImmersiveSwitchTest {
+    @get:Rule val rule = createComposeRule()
+
+    @Test fun immersiveSwitch_togglesValue() {
+        val calls = mutableListOf<Boolean>()
+        rule.setContent {
+            MyMetroUITheme {
+                SettingsScreen(ThemeSettings(accentId = "red"), {}, {}, {}, immersiveEnabled = false, onImmersiveEnabled = { calls += it })
+            }
+        }
+        rule.onNodeWithTag("immersive-switch").performScrollTo().performClick()
+        assertEquals(listOf(true), calls)
+    }
+}
