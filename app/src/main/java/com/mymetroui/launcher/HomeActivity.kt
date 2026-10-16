@@ -1,6 +1,12 @@
 package com.mymetroui.launcher
 
 import android.Manifest
+import android.app.PendingIntent
+import com.mymetroui.launcher.data.notif.NotifItem
+import com.mymetroui.launcher.data.notif.badgeCounts
+import com.mymetroui.launcher.data.notif.notificationAccessIntent
+import com.mymetroui.launcher.data.quick.quickIntent
+import com.mymetroui.launcher.data.quick.writeSettingsIntent
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -105,6 +111,7 @@ class HomeActivity : ComponentActivity() {
         val repo = app.appRepository
         setContent {
             val themeSettings by app.themeRepository.settings.collectAsState()
+            val notifications by app.notificationRepository.items.collectAsState()
             LaunchedEffect(themeSettings.mode) { applySystemBars(themeSettings.mode) }
             MyMetroUITheme(themeSettings) {
                 Box(Modifier.fillMaxSize()) {
@@ -118,6 +125,12 @@ class HomeActivity : ComponentActivity() {
                         theme = app.themeRepository,
                         onAddLive = adder::add,
                         onLiveTap = ::onLiveTap,
+                        controller = app.actionCenter,
+                        badgeCounts = badgeCounts(notifications),
+                        onOpenNotification = { openNotification(app, it) },
+                        onQuick = { launchSafely(quickIntent(it)) },
+                        onRequestWriteSettings = { launchSafely(writeSettingsIntent(this@HomeActivity)) },
+                        onGrantAccess = { launchSafely(notificationAccessIntent()) },
                     )
                     DefaultLauncherPrompt(
                         isDefault = isDefault,
@@ -127,6 +140,22 @@ class HomeActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun launchSafely(intent: Intent) {
+        try {
+            startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        } catch (_: ActivityNotFoundException) {
+        }
+    }
+
+    private fun openNotification(app: LauncherApp, item: NotifItem) {
+        try {
+            item.contentIntent?.send()
+        } catch (_: PendingIntent.CanceledException) {
+            return // the notification is stale; leave it alone
+        }
+        if (item.autoCancel) app.notificationRepository.dismiss(item.key)
     }
 
     private fun onLiveTap(kind: LiveKind, face: LiveFace?) {

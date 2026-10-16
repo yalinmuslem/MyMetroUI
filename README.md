@@ -28,6 +28,7 @@ or go to *Settings > Apps > Default apps > Home app* and pick MyMetroUI.
 - Tap empty space or press Back to leave edit mode.
 - Swipe left or tap the round arrow for the app list; tap a letter header for the jump list; long-press an app to pin or uninstall.
 - Open **Settings** (last row of the app list) to pick an accent color and dark/light mode; the choice is saved on the device.
+- **Action Center:** drag down from the very top edge (or use Settings > Action Center) to see notifications, open Wi-Fi/Bluetooth/airplane/location settings, toggle the flashlight and set brightness. Notifications appear only after you enable MyMetroUI under *Settings > Notifications > Device & app notifications* (notification access); brightness needs the "Modify system settings" permission. Notification content stays in memory on the device and is never stored or sent anywhere. Tiles show a count badge for unread notifications.
 - In **Settings > Live tiles** add a Clock, Calendar or Photos tile. Live tiles flip every few seconds (medium and wide sizes only). Calendar asks for calendar access when added; Photos opens a picker, so no broad photo permission is needed. Remove them with unpin in edit mode.
 
 ## Status
@@ -38,7 +39,9 @@ and database recovery. Work profiles are supported (a tile's key includes the us
 
 Theme (accent palette + dark/light) and live tiles (clock, calendar, photos with flip) are implemented.
 
-Not yet done: notification badges, lock screen, Action Center, Hubs, search, widgets.
+Action Center and notification badges are implemented. Play Store listing must disclose the notification-listener use.
+
+Not yet done: lock screen, Hubs, search, widgets.
 
 ## Project layout
 

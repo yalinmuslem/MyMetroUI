@@ -152,5 +152,6 @@ fun LiveTile(
             }
         }
     }
-    LiveTileView(ui, kind, face, icon, flipped, modifier)
+    // gate on flipEnabled directly so the tile returns to the front at once, without waiting for the effect to restart
+    LiveTileView(ui, kind, face, icon, flipped && flipEnabled, modifier)
 }

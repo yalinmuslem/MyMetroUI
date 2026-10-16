@@ -41,6 +41,12 @@ import com.mymetroui.launcher.ui.TileContent
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withTimeoutOrNull
 import com.mymetroui.launcher.ui.settings.SettingsScreen
+import com.mymetroui.launcher.data.notif.NotifItem
+import com.mymetroui.launcher.data.notif.badgeKey
+import com.mymetroui.launcher.data.quick.QuickKind
+import com.mymetroui.launcher.ui.actioncenter.ActionCenterController
+import com.mymetroui.launcher.ui.actioncenter.ActionCenterHost
+import com.mymetroui.launcher.ui.actioncenter.rememberActionCenterHostState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,6 +72,12 @@ fun HomeScreen(
     onAddLive: (LiveKind) -> Unit = {},
     onLiveTap: (LiveKind, LiveFace?) -> Unit = { _, _ -> },
     loadIcon: (com.mymetroui.launcher.data.AppInfo) -> android.graphics.drawable.Drawable,
+    controller: ActionCenterController,
+    badgeCounts: Map<String, Int> = emptyMap(),
+    onOpenNotification: (NotifItem) -> Unit = {},
+    onQuick: (QuickKind) -> Unit = {},
+    onRequestWriteSettings: () -> Unit = {},
+    onGrantAccess: () -> Unit = {},
 ) {
     val pager = rememberPagerState(pageCount = { 2 })
     val scope = rememberCoroutineScope()
@@ -77,6 +89,7 @@ fun HomeScreen(
     val exitEdit = { editing = false; start.onEditFinished() }
 
     val turnstile = remember { TurnstileState() }
+    val panel = rememberActionCenterHostState(controller)
     val started = LocalLifecycleOwner.current.lifecycle.currentStateAsState().value.isAtLeast(Lifecycle.State.STARTED)
 
     // Home button: back to Start and fly the tiles in. Resume: swing tiles back in after an app launch.
@@ -89,7 +102,8 @@ fun HomeScreen(
     LaunchedEffect(resumes) { resumes.collect { turnstile.playIn() } }
     BackHandler(enabled = editing, onBack = exitEdit)
     BackHandler(enabled = !editing && pager.currentPage == 1) { scope.launch { pager.animateScrollToPage(0) } }
-    BackHandler(enabled = showSettings) { showSettings = false } // registered last, so it wins
+    BackHandler(enabled = showSettings) { showSettings = false }
+    BackHandler(enabled = panel.isOpen) { panel.close() } // registered last, so it wins
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // Backdrop is wider than the screen and drifts slower than the pages.
@@ -127,6 +141,7 @@ fun HomeScreen(
                         liveFace = start.live::face,
                         flipEnabled = !editing && turnstile.progress == 0f && pager.currentPage == 0 && started,
                         onFlipped = start.live::onFlipped,
+                        badgeFor = { app -> badgeCounts[badgeKey(app.component.packageName, app.userId)] ?: 0 },
                         onTileLongPress = { editing = true },
                         loadIcon = loadIcon,
                         modifier = Modifier.fillMaxSize().statusBarsPadding(),
@@ -162,7 +177,17 @@ fun HomeScreen(
                 onClose = { showSettings = false },
                 pinnedLive = tiles.mapNotNull { (it.content as? TileContent.Live)?.kind }.toSet(),
                 onAddLive = onAddLive,
+                onOpenActionCenter = { showSettings = false; panel.open() },
             )
         }
+        ActionCenterHost(
+            host = panel,
+            controller = controller,
+            canOpen = !editing && turnstile.progress == 0f,
+            onOpenNotification = onOpenNotification,
+            onQuick = onQuick,
+            onRequestWriteSettings = onRequestWriteSettings,
+            onGrantAccess = onGrantAccess,
+        )
     }
 }

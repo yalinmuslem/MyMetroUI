@@ -87,7 +87,7 @@ class SettingsOverlayTest {
         val appList = AppListViewModel(tiles, apps)
         rule.setContent {
             val s by theme.settings.collectAsState()
-            MyMetroUITheme(s) { HomeScreen(start, appList, theme = theme, loadIcon = { ColorDrawable(0) }) }
+            MyMetroUITheme(s) { HomeScreen(start, appList, theme = theme, loadIcon = { ColorDrawable(0) }, controller = testController()) }
         }
         rule.onNodeWithTag("to-app-list").performClick()
         rule.onNodeWithTag("settings-row").performClick()
@@ -134,5 +134,17 @@ class SettingsLiveSectionTest {
         show(setOf(com.mymetroui.launcher.data.live.LiveKind.CLOCK))
         rule.onNodeWithTag("live-add-clock").performScrollTo().assertIsNotEnabled()
         rule.onNodeWithTag("live-add-calendar").performScrollTo().assertIsEnabled()
+    }
+}
+
+@RunWith(RobolectricTestRunner::class)
+class SettingsActionCenterButtonTest {
+    @get:Rule val rule = createComposeRule()
+
+    @Test fun openActionCenterButton_callsCallback() {
+        var opened = 0
+        rule.setContent { MyMetroUITheme { SettingsScreen(ThemeSettings(), {}, {}, {}, onOpenActionCenter = { opened++ }) } }
+        rule.onNodeWithTag("open-action-center").performScrollTo().performClick()
+        assertEquals(1, opened)
     }
 }
