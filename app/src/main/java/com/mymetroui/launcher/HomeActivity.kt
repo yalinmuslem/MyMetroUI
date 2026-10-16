@@ -46,6 +46,9 @@ import com.mymetroui.launcher.ui.home.HomeScreen
 import com.mymetroui.launcher.ui.theme.MyMetroUITheme
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import android.os.PowerManager
 
 /** Carries "Home pressed" events from onNewIntent to the Compose tree. */
 class HomeEvents : ViewModel() {
@@ -56,6 +59,11 @@ class HomeEvents : ViewModel() {
     private val _resumes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val resumes: SharedFlow<Unit> = _resumes
     fun resumed() { _resumes.tryEmit(Unit) }
+
+    private val _welcomeVisible = MutableStateFlow(false)
+    val welcomeVisible: StateFlow<Boolean> = _welcomeVisible
+    fun showWelcome() { _welcomeVisible.value = true }
+    fun dismissWelcome() { _welcomeVisible.value = false }
 }
 
 class HomeActivity : ComponentActivity() {
@@ -112,6 +120,8 @@ class HomeActivity : ComponentActivity() {
         setContent {
             val themeSettings by app.themeRepository.settings.collectAsState()
             val notifications by app.notificationRepository.items.collectAsState()
+            val welcomeVisible by events.welcomeVisible.collectAsState()
+            val welcomeEnabled by app.welcomePrefs.enabled.collectAsState()
             LaunchedEffect(themeSettings.mode) { applySystemBars(themeSettings.mode) }
             MyMetroUITheme(themeSettings) {
                 Box(Modifier.fillMaxSize()) {
@@ -131,6 +141,10 @@ class HomeActivity : ComponentActivity() {
                         onQuick = { launchSafely(quickIntent(it)) },
                         onRequestWriteSettings = { launchSafely(writeSettingsIntent(this@HomeActivity)) },
                         onGrantAccess = { launchSafely(notificationAccessIntent()) },
+                        welcomeVisible = welcomeVisible,
+                        onWelcomeDismiss = events::dismissWelcome,
+                        welcomeEnabled = welcomeEnabled,
+                        onWelcomeEnabled = app.welcomePrefs::setEnabled,
                     )
                     DefaultLauncherPrompt(
                         isDefault = isDefault,
@@ -178,6 +192,13 @@ class HomeActivity : ComponentActivity() {
         super.onResume()
         isDefault = isDefaultLauncher(this)
         events.resumed()
+        if ((application as LauncherApp).welcomeGate.onResume()) events.showWelcome()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val interactive = runCatching { getSystemService(PowerManager::class.java).isInteractive }.getOrDefault(true)
+        (application as LauncherApp).welcomeGate.onPause(interactive)
     }
 
     override fun onNewIntent(intent: Intent) {

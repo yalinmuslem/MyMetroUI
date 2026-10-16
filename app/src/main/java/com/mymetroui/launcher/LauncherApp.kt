@@ -18,6 +18,13 @@ import com.mymetroui.launcher.data.live.PhotoStore
 import com.mymetroui.launcher.data.live.PhotosSource
 import com.mymetroui.launcher.data.AppRepository
 import com.mymetroui.launcher.data.ThemeRepository
+import com.mymetroui.launcher.data.WelcomePrefs
+import com.mymetroui.launcher.ui.welcome.WelcomeGate
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import androidx.core.content.ContextCompat
 import com.mymetroui.launcher.data.notif.NotificationRepository
 import com.mymetroui.launcher.data.TileRepository
 import com.mymetroui.launcher.data.db.AppDatabase
@@ -37,12 +44,25 @@ class LauncherApp : Application() {
             CoroutineScope(SupervisorJob() + Dispatchers.Main),
         )
     }
+    val welcomePrefs by lazy { WelcomePrefs(getSharedPreferences("welcome", MODE_PRIVATE)) }
+    val welcomeGate = WelcomeGate { welcomePrefs.enabled.value }
     val photoStore by lazy { PhotoStore(getSharedPreferences("photos", MODE_PRIVATE)) }
     val liveSource: LiveTileSource by lazy {
         CompositeLiveSource(
             ClockSource(),
             CalendarSource(ContentResolverCalendarQuery(this)),
             PhotosSource(photoStore) { uri -> contentResolver.openInputStream(Uri.parse(uri))?.use { true } ?: false },
+        )
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        // SCREEN_OFF is not delivered to manifest receivers, so it is registered at runtime
+        ContextCompat.registerReceiver(
+            this,
+            object : BroadcastReceiver() { override fun onReceive(context: Context, intent: Intent) { welcomeGate.onScreenOff() } },
+            IntentFilter(Intent.ACTION_SCREEN_OFF),
+            ContextCompat.RECEIVER_NOT_EXPORTED,
         )
     }
 }

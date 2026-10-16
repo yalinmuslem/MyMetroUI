@@ -16,6 +16,8 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Switch
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +40,8 @@ fun SettingsScreen(
     pinnedLive: Set<LiveKind> = emptySet(),
     onAddLive: (LiveKind) -> Unit = {},
     onOpenActionCenter: () -> Unit = {},
+    welcomeEnabled: Boolean = true,
+    onWelcomeEnabled: (Boolean) -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
     Column(
@@ -75,6 +79,13 @@ fun SettingsScreen(
                 .padding(horizontal = 20.dp, vertical = 12.dp).testTag("open-action-center"),
             color = scheme.onPrimary,
         )
+        Row(
+            Modifier.fillMaxWidth().padding(top = 24.dp).clickable { onWelcomeEnabled(!welcomeEnabled) }.testTag("welcome-switch"),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(stringResource(R.string.welcome_setting), Modifier.weight(1f))
+            Switch(checked = welcomeEnabled, onCheckedChange = null)
+        }
         Text(stringResource(R.string.live_tiles), Modifier.padding(top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleMedium)
         LiveKind.values().forEach { kind ->
             val isPinned = kind in pinnedLive
