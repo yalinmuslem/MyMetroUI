@@ -4,4 +4,8 @@
     <string name="uninstall">Uninstall</string>
     <string name="set_default_title">Make MyMetroUI your home app</string>
     <string name="set_default_action">Choose</string>
+    <string name="settings">Settings</string>
+    <string name="theme_title">Theme</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_light">Light</string>
 </resources>

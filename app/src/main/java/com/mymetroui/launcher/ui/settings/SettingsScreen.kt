@@ -1,0 +1,80 @@
+package com.mymetroui.launcher.ui.settings
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.mymetroui.launcher.R
+import com.mymetroui.launcher.data.ThemeMode
+import com.mymetroui.launcher.data.ThemeSettings
+import com.mymetroui.launcher.ui.theme.Accents
+
+@Composable
+fun SettingsScreen(
+    settings: ThemeSettings,
+    onAccent: (String) -> Unit,
+    onMode: (ThemeMode) -> Unit,
+    onClose: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    Column(
+        Modifier.fillMaxSize().background(scheme.background)
+            .pointerInput(Unit) { detectTapGestures { } } // swallow touches meant for the page below
+            .statusBarsPadding().verticalScroll(rememberScrollState()).padding(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.theme_title), Modifier.weight(1f), style = MaterialTheme.typography.headlineLarge)
+            Box(Modifier.size(48.dp).clickable(onClick = onClose).testTag("settings-close"), contentAlignment = Alignment.Center) {
+                Text("×", style = MaterialTheme.typography.titleMedium)
+            }
+        }
+        Row(Modifier.padding(vertical = 16.dp)) {
+            ModeOption("mode-dark", stringResource(R.string.theme_dark), settings.mode == ThemeMode.DARK) { onMode(ThemeMode.DARK) }
+            Box(Modifier.size(8.dp))
+            ModeOption("mode-light", stringResource(R.string.theme_light), settings.mode == ThemeMode.LIGHT) { onMode(ThemeMode.LIGHT) }
+        }
+        Accents.chunked(4).forEach { row ->
+            Row {
+                row.forEach { accent ->
+                    val selected = accent.id == settings.accentId
+                    Box(
+                        Modifier.padding(4.dp).size(64.dp).background(accent.color)
+                            .then(if (selected) Modifier.border(3.dp, scheme.onBackground) else Modifier)
+                            .testTag("accent-${accent.id}")
+                            .selectable(selected = selected, onClick = { onAccent(accent.id) }),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ModeOption(tag: String, label: String, selected: Boolean, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Box(
+        Modifier.background(if (selected) scheme.primary else scheme.surfaceVariant)
+            .testTag(tag)
+            .selectable(selected = selected, onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+    ) { Text(label, color = if (selected) scheme.onPrimary else scheme.onSurfaceVariant) }
+}

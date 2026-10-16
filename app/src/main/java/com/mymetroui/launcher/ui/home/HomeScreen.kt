@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.statusBarsPadding
 import com.mymetroui.launcher.domain.next
 import com.mymetroui.launcher.ui.start.StartGrid
+import com.mymetroui.launcher.ui.settings.SettingsScreen
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,12 +54,15 @@ fun HomeScreen(
     homePresses: Flow<Unit> = emptyFlow(),
     resumes: Flow<Unit> = emptyFlow(),
     onLaunchApp: (com.mymetroui.launcher.data.AppInfo) -> Unit = {},
+    theme: com.mymetroui.launcher.data.ThemeSource,
     loadIcon: (com.mymetroui.launcher.data.AppInfo) -> android.graphics.drawable.Drawable,
 ) {
     val pager = rememberPagerState(pageCount = { 2 })
     val scope = rememberCoroutineScope()
     val groups by appList.groups.collectAsState()
     val tiles by start.state.collectAsState()
+    val themeSettings by theme.settings.collectAsState()
+    var showSettings by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf(false) }
     val exitEdit = { editing = false; start.onEditFinished() }
 
@@ -74,6 +78,7 @@ fun HomeScreen(
     LaunchedEffect(resumes) { resumes.collect { turnstile.playIn() } }
     BackHandler(enabled = editing, onBack = exitEdit)
     BackHandler(enabled = !editing && pager.currentPage == 1) { scope.launch { pager.animateScrollToPage(0) } }
+    BackHandler(enabled = showSettings) { showSettings = false } // registered last, so it wins
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // Backdrop is wider than the screen and drifts slower than the pages.
@@ -124,8 +129,17 @@ fun HomeScreen(
                     onPin = { appList.pin(it.key); scope.launch { pager.animateScrollToPage(0) } },
                     onUninstall = appList::uninstall,
                     loadIcon = loadIcon,
+                    onOpenSettings = { showSettings = true },
                 )
             }
+        }
+        if (showSettings) {
+            SettingsScreen(
+                settings = themeSettings,
+                onAccent = theme::setAccent,
+                onMode = theme::setMode,
+                onClose = { showSettings = false },
+            )
         }
     }
 }
