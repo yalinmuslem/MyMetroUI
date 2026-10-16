@@ -7,6 +7,7 @@ import com.mymetroui.launcher.data.AppInfo
 import com.mymetroui.launcher.data.AppSource
 import com.mymetroui.launcher.data.TileSource
 import com.mymetroui.launcher.data.defaultTileKeys
+import com.mymetroui.launcher.data.hub.HubKind
 import com.mymetroui.launcher.data.live.LiveKind
 import com.mymetroui.launcher.data.live.LiveTileSource
 import com.mymetroui.launcher.data.live.NoLiveTiles
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 sealed interface TileContent {
     data class App(val app: AppInfo) : TileContent
     data class Live(val kind: LiveKind) : TileContent
+    data class Hub(val kind: HubKind) : TileContent
 }
 
 data class TileUi(val tile: Tile, val content: TileContent) {
@@ -49,7 +51,7 @@ class StartViewModel(
         // Drop tiles whose app is gone (uninstalled, or component removed by an update).
         viewModelScope.launch {
             joined.collect { (t, byKey) ->
-                val missing = t.filter { !it.key.startsWith(LiveKind.PREFIX) && it.key !in byKey }.map { it.key }.toSet()
+                val missing = t.filter { !it.key.startsWith(LiveKind.PREFIX) && !it.key.startsWith(HubKind.PREFIX) && it.key !in byKey }.map { it.key }.toSet()
                 if (missing.isNotEmpty() && byKey.isNotEmpty()) {
                     tiles.removeKeys(missing)
                     tiles.compact()
@@ -68,6 +70,7 @@ class StartViewModel(
     }
 
     fun addLive(kind: LiveKind) = pin(kind.key)
+    fun addHub(kind: HubKind) = pin(kind.key)
 
     fun unpin(id: Long) { viewModelScope.launch { tiles.unpin(id) } }
     fun move(id: Long, col: Int, row: Int) { viewModelScope.launch { tiles.move(id, col, row) } }
@@ -81,7 +84,8 @@ class StartViewModel(
     }
 }
 
-// Unknown live:* keys (e.g. written by a newer version) map to null: skipped, never deleted.
+// Unknown live:* and hub:* keys (e.g. written by a newer version) map to null: skipped, never deleted.
 private fun contentFor(key: String, apps: Map<String, AppInfo>): TileContent? =
     if (key.startsWith(LiveKind.PREFIX)) LiveKind.fromKey(key)?.let { TileContent.Live(it) }
+    else if (key.startsWith(HubKind.PREFIX)) HubKind.fromKey(key)?.let { TileContent.Hub(it) }
     else apps[key]?.let { TileContent.App(it) }
