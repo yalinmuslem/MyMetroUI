@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -76,13 +78,14 @@ fun HomeScreen(
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // Backdrop is wider than the screen and drifts slower than the pages.
         val widthPx = with(LocalDensity.current) { maxWidth.toPx() }
+        val bg = MaterialTheme.colorScheme.background
         Box(
             Modifier.requiredWidth(maxWidth * 1.3f).fillMaxHeight()
                 .graphicsLayer {
                     val page = pager.currentPage + pager.currentPageOffsetFraction
                     translationX = -page * widthPx * MotionSpec.ParallaxBackgroundFactor
                 }
-                .background(Brush.horizontalGradient(listOf(Color.Black, Color(0xFF0A2A3A), Color.Black))),
+                .background(Brush.horizontalGradient(listOf(bg, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f).compositeOver(bg), bg))),
         )
         HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
             if (page == 0) {
@@ -108,7 +111,7 @@ fun HomeScreen(
                     )
                     Box(
                         Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(16.dp).size(44.dp)
-                            .border(2.dp, Color.White, CircleShape)
+                            .border(2.dp, MaterialTheme.colorScheme.onBackground, CircleShape)
                             .clickable { scope.launch { pager.animateScrollToPage(1) } }
                             .testTag("to-app-list"),
                         contentAlignment = Alignment.Center,
