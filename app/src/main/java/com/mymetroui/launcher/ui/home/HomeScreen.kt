@@ -29,6 +29,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import androidx.compose.foundation.layout.statusBarsPadding
 import com.mymetroui.launcher.domain.next
 import com.mymetroui.launcher.ui.start.StartGrid
@@ -67,6 +70,7 @@ fun HomeScreen(
     val exitEdit = { editing = false; start.onEditFinished() }
 
     val turnstile = remember { TurnstileState() }
+    val started = LocalLifecycleOwner.current.lifecycle.currentStateAsState().value.isAtLeast(Lifecycle.State.STARTED)
 
     // Home button: back to Start and fly the tiles in. Resume: swing tiles back in after an app launch.
     LaunchedEffect(homePresses) {
@@ -107,6 +111,9 @@ fun HomeScreen(
                             }
                         },
                         turnstile = turnstile,
+                        liveFace = start.live::face,
+                        flipEnabled = !editing && turnstile.progress == 0f && pager.currentPage == 0 && started,
+                        onFlipped = start.live::onFlipped,
                         onTileLongPress = { editing = true },
                         loadIcon = loadIcon,
                         modifier = Modifier.fillMaxSize().statusBarsPadding(),

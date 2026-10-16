@@ -15,6 +15,11 @@ object MotionSpec {
     const val TurnstileAngle = 90f
     const val FlyInDurationMs = 400
 
+    const val FlipDurationMs = 600
+    const val FlipHoldMs = 3500
+    const val FlipIntervalMs = 9000
+    const val FlipStaggerMs = 700
+
     const val ParallaxTileFactor = 1.0f
     const val ParallaxBackgroundFactor = 0.3f
 
