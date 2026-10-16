@@ -47,7 +47,7 @@ class HomeActivity : ComponentActivity() {
         object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T = when (modelClass) {
-                StartViewModel::class.java -> StartViewModel(app.tileRepository, app.appRepository)
+                StartViewModel::class.java -> StartViewModel(app.tileRepository, app.appRepository, app.liveSource)
                 AppListViewModel::class.java -> AppListViewModel(app.tileRepository, app.appRepository)
                 else -> HomeEvents()
             } as T
