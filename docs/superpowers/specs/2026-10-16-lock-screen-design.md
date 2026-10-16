@@ -37,7 +37,7 @@ Pada `HomeActivity.onResume`: bila ada tanda tertunda dan sakelar aktif, layar s
 ### 2. Tampilan — `WelcomeScreen`
 
 - Jam dan tanggal besar (memakai ulang `clockFace`).
-- Baris acara kalender berikutnya, hanya bila izin kalender sudah diberikan dan ada acara.
+- Baris kalender dari sumber live tile (acara berikutnya atau "No events today"), hanya bila izin kalender sudah diberikan.
 - Ringkasan notifikasi, hanya bila akses listener aktif: jumlah total dan sampai 3 judul terbaru (`WelcomeSummary`, logika murni). Bila `KeyguardManager.isDeviceLocked` true, hanya jumlah yang tampil.
 - Latar: gradien backdrop yang sama dengan Start.
 - Geser ke atas melewati ambang 25% atau fling cepat menyingkap Start (`PanelDrag.settle` dipakai ulang). Back juga menutup. Durasi animasi dari `MotionSpec`.
@@ -56,7 +56,7 @@ Satu sakelar "Show welcome screen after screen off" di Settings, disimpan di `We
 
 - `WelcomeGateTest`: layar mati saat resumed menandai; layar mati saat paused dengan `isInteractive` false menandai; Home tanpa layar mati tidak menandai; tanda dihapus setelah dipakai; sakelar mati menahan.
 - `WelcomeSummaryTest`: jumlah dan 3 judul terbaru; terkunci hanya jumlah; tanpa akses tidak ada bagian notifikasi.
-- `WelcomeScreenTest`: jam dan tanggal; baris acara hanya saat ada; drag naik memanggil dismiss; drag kecil tidak.
+- `WelcomeScreenTest`: jam dan tanggal; baris kalender hanya untuk wajah teks; drag naik memanggil dismiss; drag kecil tidak.
 - `HomeScreen`: layar tampil; Back menutup; Action Center nonaktif selama tampil.
 - `WelcomePrefsTest` dan tes sakelar di Settings.
 
