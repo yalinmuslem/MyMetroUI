@@ -4,6 +4,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Column
@@ -54,6 +56,7 @@ fun WelcomeScreen(
         modifier.fillMaxSize()
             .onSizeChanged { heightPx = it.height.toFloat() }
             .graphicsLayer { translationY = offset.value }
+            .pointerInput(Unit) { detectTapGestures { } } // taps must not reach the Start tiles underneath
             .background(Brush.verticalGradient(listOf(bg, tint)))
             .draggable(drag, Orientation.Vertical, onDragStopped = { velocity ->
                 val away = PanelDrag.settle(-offset.value / heightPx, -velocity, wasOpen = false)
