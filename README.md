@@ -27,6 +27,7 @@ or go to *Settings > Apps > Default apps > Home app* and pick MyMetroUI.
 - Tap a tile to launch; long-press a tile to enter edit mode (drag to move, buttons to resize / unpin).
 - Tap empty space or press Back to leave edit mode.
 - Swipe left or tap the round arrow for the app list; tap a letter header for the jump list; long-press an app to pin or uninstall.
+- Open **Settings** (last row of the app list) to pick an accent color and dark/light mode; the choice is saved on the device.
 
 ## Status
 
@@ -34,7 +35,9 @@ Core launcher (sub-project 1) is implemented: Start grid (small / medium / wide 
 alphabetical app list with jump list, tilt / turnstile / fly-in / parallax motion, default-launcher prompt,
 and database recovery. Work profiles are supported (a tile's key includes the user id).
 
-Not yet done: live tiles, theming beyond the single default accent, lock screen, Action Center, Hubs, search, widgets.
+Theme (accent palette + dark/light) is implemented.
+
+Not yet done: live tiles, lock screen, Action Center, Hubs, search, widgets.
 
 ## Project layout
 

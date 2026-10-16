@@ -88,3 +88,11 @@ class StartViewModelTest {
         assertEquals(1, tiles.flow.first().size)
     }
 }
+
+class FakeThemeSource(initial: com.mymetroui.launcher.data.ThemeSettings = com.mymetroui.launcher.data.ThemeSettings()) :
+    com.mymetroui.launcher.data.ThemeSource {
+    private val state = MutableStateFlow(initial)
+    override val settings: kotlinx.coroutines.flow.StateFlow<com.mymetroui.launcher.data.ThemeSettings> = state
+    override fun setAccent(id: String) { state.value = state.value.copy(accentId = id) }
+    override fun setMode(mode: com.mymetroui.launcher.data.ThemeMode) { state.value = state.value.copy(mode = mode) }
+}

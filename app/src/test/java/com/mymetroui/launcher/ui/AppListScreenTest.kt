@@ -10,6 +10,7 @@ import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import com.mymetroui.launcher.data.AppInfo
@@ -75,5 +76,17 @@ class AppListScreenTest {
     @Test fun appLabelWithLargeFontScale_ellipsizes() {
         show(listOf(fakeApp("An extremely long application label that cannot possibly fit on one line")), fontScale = 2f)
         rule.onNodeWithTag("header-A").assertIsDisplayed()
+    }
+
+    @Test fun settingsRow_shownLast_andOpens() {
+        var opened = 0
+        rule.setContent { MyMetroUITheme { AppListScreen(groupByLetter(sample), {}, {}, {}, onOpenSettings = { opened++ }) } }
+        rule.onNodeWithTag("settings-row").performScrollTo().performClick()
+        assertEquals(1, opened)
+    }
+
+    @Test fun settingsRow_shownWhenNoApps() {
+        rule.setContent { MyMetroUITheme { AppListScreen(emptyMap(), {}, {}, {}) } }
+        rule.onNodeWithTag("settings-row").assertIsDisplayed()
     }
 }

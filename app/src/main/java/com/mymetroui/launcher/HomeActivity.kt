@@ -4,7 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import com.mymetroui.launcher.data.ThemeMode
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
@@ -60,9 +64,12 @@ class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val repo = (application as LauncherApp).appRepository
+        val app = application as LauncherApp
+        val repo = app.appRepository
         setContent {
-            MyMetroUITheme {
+            val themeSettings by app.themeRepository.settings.collectAsState()
+            LaunchedEffect(themeSettings.mode) { applySystemBars(themeSettings.mode) }
+            MyMetroUITheme(themeSettings) {
                 Box(Modifier.fillMaxSize()) {
                     HomeScreen(
                         start = start,
@@ -71,6 +78,7 @@ class HomeActivity : ComponentActivity() {
                         resumes = events.resumes,
                         onLaunchApp = { repo.launch(it, null) },
                         loadIcon = { repo.loadIcon(it, resources.displayMetrics.densityDpi) },
+                        theme = app.themeRepository,
                     )
                     DefaultLauncherPrompt(
                         isDefault = isDefault,
@@ -80,6 +88,12 @@ class HomeActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun applySystemBars(mode: ThemeMode) {
+        val clear = android.graphics.Color.TRANSPARENT
+        val style = if (mode == ThemeMode.DARK) SystemBarStyle.dark(clear) else SystemBarStyle.light(clear, clear)
+        enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
     }
 
     override fun onResume() {

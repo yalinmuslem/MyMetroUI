@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -30,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.statusBarsPadding
 import com.mymetroui.launcher.domain.next
 import com.mymetroui.launcher.ui.start.StartGrid
+import com.mymetroui.launcher.ui.settings.SettingsScreen
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,12 +54,15 @@ fun HomeScreen(
     homePresses: Flow<Unit> = emptyFlow(),
     resumes: Flow<Unit> = emptyFlow(),
     onLaunchApp: (com.mymetroui.launcher.data.AppInfo) -> Unit = {},
+    theme: com.mymetroui.launcher.data.ThemeSource,
     loadIcon: (com.mymetroui.launcher.data.AppInfo) -> android.graphics.drawable.Drawable,
 ) {
     val pager = rememberPagerState(pageCount = { 2 })
     val scope = rememberCoroutineScope()
     val groups by appList.groups.collectAsState()
     val tiles by start.state.collectAsState()
+    val themeSettings by theme.settings.collectAsState()
+    var showSettings by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf(false) }
     val exitEdit = { editing = false; start.onEditFinished() }
 
@@ -72,17 +78,19 @@ fun HomeScreen(
     LaunchedEffect(resumes) { resumes.collect { turnstile.playIn() } }
     BackHandler(enabled = editing, onBack = exitEdit)
     BackHandler(enabled = !editing && pager.currentPage == 1) { scope.launch { pager.animateScrollToPage(0) } }
+    BackHandler(enabled = showSettings) { showSettings = false } // registered last, so it wins
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // Backdrop is wider than the screen and drifts slower than the pages.
         val widthPx = with(LocalDensity.current) { maxWidth.toPx() }
+        val bg = MaterialTheme.colorScheme.background
         Box(
             Modifier.requiredWidth(maxWidth * 1.3f).fillMaxHeight()
                 .graphicsLayer {
                     val page = pager.currentPage + pager.currentPageOffsetFraction
                     translationX = -page * widthPx * MotionSpec.ParallaxBackgroundFactor
                 }
-                .background(Brush.horizontalGradient(listOf(Color.Black, Color(0xFF0A2A3A), Color.Black))),
+                .background(Brush.horizontalGradient(listOf(bg, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f).compositeOver(bg), bg))),
         )
         HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
             if (page == 0) {
@@ -108,7 +116,7 @@ fun HomeScreen(
                     )
                     Box(
                         Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(16.dp).size(44.dp)
-                            .border(2.dp, Color.White, CircleShape)
+                            .border(2.dp, MaterialTheme.colorScheme.onBackground, CircleShape)
                             .clickable { scope.launch { pager.animateScrollToPage(1) } }
                             .testTag("to-app-list"),
                         contentAlignment = Alignment.Center,
@@ -121,8 +129,17 @@ fun HomeScreen(
                     onPin = { appList.pin(it.key); scope.launch { pager.animateScrollToPage(0) } },
                     onUninstall = appList::uninstall,
                     loadIcon = loadIcon,
+                    onOpenSettings = { showSettings = true },
                 )
             }
+        }
+        if (showSettings) {
+            SettingsScreen(
+                settings = themeSettings,
+                onAccent = theme::setAccent,
+                onMode = theme::setMode,
+                onClose = { showSettings = false },
+            )
         }
     }
 }

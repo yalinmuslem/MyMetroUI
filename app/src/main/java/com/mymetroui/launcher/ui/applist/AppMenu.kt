@@ -20,10 +20,10 @@ import com.mymetroui.launcher.R
 @Composable
 fun AppMenu(label: String, onPin: () -> Unit, onUninstall: () -> Unit, onDismiss: () -> Unit) {
     Box(
-        Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.85f)).clickable(onClick = onDismiss),
+        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.85f)).clickable(onClick = onDismiss),
         contentAlignment = Alignment.Center,
     ) {
-        Column(Modifier.background(Color(0xFF1F1F1F)).padding(24.dp)) {
+        Column(Modifier.background(MaterialTheme.colorScheme.surfaceVariant).padding(24.dp)) {
             Text(label, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(stringResource(R.string.pin_to_start), Modifier.clickable(onClick = onPin).padding(top = 16.dp, bottom = 8.dp))
             Text(stringResource(R.string.uninstall), Modifier.clickable(onClick = onUninstall).padding(vertical = 8.dp))

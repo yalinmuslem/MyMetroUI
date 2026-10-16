@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 fun JumpList(available: Set<Char>, onPick: (Char) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
     val letters = (listOf('#') + ('A'..'Z') + available).distinct()
     Box(
-        modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.92f)).testTag("jump-list"),
+        modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.92f)).testTag("jump-list"),
         contentAlignment = Alignment.Center,
     ) {
         Box(Modifier.fillMaxSize().clickable(onClick = onDismiss))

@@ -46,7 +46,7 @@ fun defaultLauncherIntent(context: Context): Intent {
 fun DefaultLauncherPrompt(isDefault: Boolean, onChoose: () -> Unit, modifier: Modifier = Modifier) {
     if (isDefault) return
     Row(
-        modifier.fillMaxWidth().navigationBarsPadding().background(Color(0xE61F1F1F)).padding(16.dp).testTag("default-prompt"),
+        modifier.fillMaxWidth().navigationBarsPadding().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)).padding(16.dp).testTag("default-prompt"),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(stringResource(R.string.set_default_title), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)

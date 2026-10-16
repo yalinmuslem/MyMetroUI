@@ -26,6 +26,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import com.mymetroui.launcher.R
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mymetroui.launcher.data.AppInfo
@@ -41,6 +43,7 @@ fun AppListScreen(
     onUninstall: (AppInfo) -> Unit,
     modifier: Modifier = Modifier,
     loadIcon: ((AppInfo) -> Drawable)? = null,
+    onOpenSettings: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -80,6 +83,7 @@ fun AppListScreen(
                     }
                 }
             }
+item(key = "settings") { Text( stringResource(R.string.settings), Modifier.fillMaxWidth().clickable(onClick = onOpenSettings).padding(16.dp).testTag("settings-row"), style = MaterialTheme.typography.bodyLarge, ) }
         }
         if (showJump) {
             JumpList(
