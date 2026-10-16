@@ -8,4 +8,10 @@
     <string name="theme_title">Theme</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_light">Light</string>
+    <string name="live_tap_to_allow">Tap to allow calendar access</string>
+    <string name="live_tiles">Live tiles</string>
+    <string name="live_clock">Clock</string>
+    <string name="live_calendar">Calendar</string>
+    <string name="live_photos">Photos</string>
+    <string name="live_on_start">On Start</string>
 </resources>

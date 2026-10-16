@@ -62,7 +62,7 @@ class StartViewModelTest {
         val vm = StartViewModel(tiles, apps)
         assertEquals(2, vm.state.value.size)
         apps.flow.value = listOf(a)
-        assertEquals(listOf(a.key), vm.state.value.map { it.app.key })
+        assertEquals(listOf(a.key), vm.state.value.map { it.app!!.key })
         assertEquals(0, tiles.flow.value.single().row)
     }
 

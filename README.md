@@ -28,6 +28,7 @@ or go to *Settings > Apps > Default apps > Home app* and pick MyMetroUI.
 - Tap empty space or press Back to leave edit mode.
 - Swipe left or tap the round arrow for the app list; tap a letter header for the jump list; long-press an app to pin or uninstall.
 - Open **Settings** (last row of the app list) to pick an accent color and dark/light mode; the choice is saved on the device.
+- In **Settings > Live tiles** add a Clock, Calendar or Photos tile. Live tiles flip every few seconds (medium and wide sizes only). Calendar asks for calendar access when added; Photos opens a picker, so no broad photo permission is needed. Remove them with unpin in edit mode.
 
 ## Status
 
@@ -35,9 +36,9 @@ Core launcher (sub-project 1) is implemented: Start grid (small / medium / wide 
 alphabetical app list with jump list, tilt / turnstile / fly-in / parallax motion, default-launcher prompt,
 and database recovery. Work profiles are supported (a tile's key includes the user id).
 
-Theme (accent palette + dark/light) is implemented.
+Theme (accent palette + dark/light) and live tiles (clock, calendar, photos with flip) are implemented.
 
-Not yet done: live tiles, lock screen, Action Center, Hubs, search, widgets.
+Not yet done: notification badges, lock screen, Action Center, Hubs, search, widgets.
 
 ## Project layout
 

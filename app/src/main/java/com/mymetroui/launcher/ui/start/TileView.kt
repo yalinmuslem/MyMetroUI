@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mymetroui.launcher.domain.TileSize
+import com.mymetroui.launcher.ui.TileContent
 import com.mymetroui.launcher.ui.TileUi
 import com.mymetroui.launcher.ui.common.DrawableImage
 
@@ -22,7 +23,7 @@ fun TileView(ui: TileUi, icon: Drawable, modifier: Modifier = Modifier) {
         Box(Modifier.align(Alignment.Center)) { DrawableImage(icon, if (small) 28.dp else 48.dp) }
         if (!small) {
             Text(
-                ui.app.label,
+                tileLabel(ui),
                 Modifier.align(Alignment.BottomStart).padding(8.dp),
                 style = MaterialTheme.typography.labelMedium,
                 maxLines = 1,
@@ -30,4 +31,9 @@ fun TileView(ui: TileUi, icon: Drawable, modifier: Modifier = Modifier) {
             )
         }
     }
+}
+
+private fun tileLabel(ui: TileUi): String = when (val c = ui.content) {
+    is TileContent.App -> c.app.label
+    is TileContent.Live -> c.kind.name.lowercase().replaceFirstChar { it.uppercase() }
 }

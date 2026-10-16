@@ -9,6 +9,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
@@ -52,6 +53,7 @@ class EditModeTest {
                     onTileTap = { _, _ -> },
                     onTileLongPress = { editing = true },
                     loadIcon = { ColorDrawable(0) },
+                    liveFace = { kotlinx.coroutines.flow.flowOf(com.mymetroui.launcher.data.live.LiveFace.Text("LIVE")) },
                     onMove = { id, c, r -> moves += Triple(id, c, r) },
                     onResize = { id ->
                         tiles = tiles.map { if (it.tile.id == id) it.copy(tile = it.tile.copy(size = it.tile.size.next())) else it }
@@ -118,5 +120,37 @@ class EditModeTest {
         rule.onNodeWithTag("unpin-1").assertDoesNotExist()
         rule.onNodeWithTag("resize-1").assertDoesNotExist()
         rule.onNodeWithTag("tile-2").assertIsDisplayed()
+    }
+
+    private fun liveTile(id: Long, size: TileSize = TileSize.MEDIUM) =
+        TileUi(Tile(id, "live:clock", size, 0, 0), TileContent.Live(com.mymetroui.launcher.data.live.LiveKind.CLOCK))
+
+    @Test fun liveTile_canBeDraggedResizedUnpinned() {
+        show(listOf(liveTile(1)))
+        enterEdit(1)
+        val step = with(rule.density) { (75.dp + 4.dp).toPx() }
+        rule.onNodeWithTag("tile-1").performTouchInput {
+            down(center)
+            moveBy(Offset(1.2f * step, 0f))
+            up()
+        }
+        assertEquals(listOf(Triple(1L, 1, 0)), moves)
+        rule.onNodeWithTag("resize-1").performClick()
+        assertEquals(listOf(TileSize.WIDE), sizes)
+        rule.onNodeWithTag("unpin-1").performClick()
+        assertEquals(listOf(1L), unpinned)
+    }
+
+    @Test fun enteringEdit_snapsFlippedTileToFront() {
+        rule.mainClock.autoAdvance = false
+        show(listOf(liveTile(1)))
+        var steps = 0
+        while (rule.onAllNodesWithTag("live-back-1").fetchSemanticsNodes().isEmpty() && steps++ < 40) {
+            rule.mainClock.advanceTimeBy(500)
+        }
+        assertTrue("tile never flipped", rule.onAllNodesWithTag("live-back-1").fetchSemanticsNodes().isNotEmpty())
+        rule.runOnIdle { editing = true }
+        rule.mainClock.advanceTimeBy(1_500)
+        rule.onNodeWithTag("live-back-1").assertDoesNotExist()
     }
 }

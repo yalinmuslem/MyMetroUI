@@ -4,7 +4,10 @@ import android.graphics.drawable.ColorDrawable
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -104,5 +107,32 @@ class SettingsOverlayTest {
         rule.onNodeWithTag("accent-red").performClick()
         assertEquals("red", theme.settings.value.accentId)
         rule.onNodeWithTag("accent-red").assertIsSelected()
+    }
+}
+
+@RunWith(RobolectricTestRunner::class)
+class SettingsLiveSectionTest {
+    @get:Rule val rule = createComposeRule()
+
+    private val added = mutableListOf<com.mymetroui.launcher.data.live.LiveKind>()
+
+    private fun show(pinned: Set<com.mymetroui.launcher.data.live.LiveKind> = emptySet()) = rule.setContent {
+        MyMetroUITheme {
+            SettingsScreen(ThemeSettings(), {}, {}, {}, pinnedLive = pinned, onAddLive = { added += it })
+        }
+    }
+
+    @Test fun liveAddButtons_callOnAddLive() {
+        show()
+        rule.onNodeWithTag("live-add-clock").performScrollTo().performClick()
+        rule.onNodeWithTag("live-add-calendar").performScrollTo().performClick()
+        rule.onNodeWithTag("live-add-photos").performScrollTo().performClick()
+        assertEquals(com.mymetroui.launcher.data.live.LiveKind.values().toList(), added)
+    }
+
+    @Test fun pinnedLiveButton_isDisabled() {
+        show(setOf(com.mymetroui.launcher.data.live.LiveKind.CLOCK))
+        rule.onNodeWithTag("live-add-clock").performScrollTo().assertIsNotEnabled()
+        rule.onNodeWithTag("live-add-calendar").performScrollTo().assertIsEnabled()
     }
 }

@@ -1,6 +1,17 @@
 package com.mymetroui.launcher
 
+import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import com.mymetroui.launcher.data.live.LiveFace
+import com.mymetroui.launcher.data.live.LiveKind
+import com.mymetroui.launcher.data.live.LiveTap
+import com.mymetroui.launcher.data.live.LiveTileAdder
+import com.mymetroui.launcher.data.live.liveOpenIntent
+import com.mymetroui.launcher.data.live.liveTap
+import com.mymetroui.launcher.ui.TileContent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -47,7 +58,7 @@ class HomeActivity : ComponentActivity() {
         object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T = when (modelClass) {
-                StartViewModel::class.java -> StartViewModel(app.tileRepository, app.appRepository)
+                StartViewModel::class.java -> StartViewModel(app.tileRepository, app.appRepository, app.liveSource)
                 AppListViewModel::class.java -> AppListViewModel(app.tileRepository, app.appRepository)
                 else -> HomeEvents()
             } as T
@@ -57,6 +68,32 @@ class HomeActivity : ComponentActivity() {
     private val appList: AppListViewModel by viewModels { factory }
     private val events: HomeEvents by viewModels { factory }
     private var isDefault by mutableStateOf(true)
+    private var calendarResult: ((Boolean) -> Unit)? = null
+    private var photoResult: ((List<String>) -> Unit)? = null
+    private val calendarPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        calendarResult?.invoke(granted)
+        calendarResult = null
+    }
+    private val photoPicker = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        // keep read access across reboots; a URI that refuses the grant is simply not used
+        val kept = uris.filter { runCatching { contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION) }.isSuccess }
+        photoResult?.invoke(kept.map { it.toString() })
+        photoResult = null
+    }
+    private val adder by lazy {
+        val app = application as LauncherApp
+        LiveTileAdder(
+            pinned = { start.state.value.mapNotNull { (it.content as? TileContent.Live)?.kind }.toSet() },
+            requestCalendar = { cb ->
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) cb(true)
+                else { calendarResult = cb; calendarPermission.launch(Manifest.permission.READ_CALENDAR) }
+            },
+            pickPhotos = { cb -> photoResult = cb; photoPicker.launch(arrayOf("image/*")) },
+            store = app.photoStore,
+            pin = start::addLive,
+        )
+    }
+
     private val roleRequest = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         isDefault = isDefaultLauncher(this)
     }
@@ -79,6 +116,8 @@ class HomeActivity : ComponentActivity() {
                         onLaunchApp = { repo.launch(it, null) },
                         loadIcon = { repo.loadIcon(it, resources.displayMetrics.densityDpi) },
                         theme = app.themeRepository,
+                        onAddLive = adder::add,
+                        onLiveTap = ::onLiveTap,
                     )
                     DefaultLauncherPrompt(
                         isDefault = isDefault,
@@ -86,6 +125,16 @@ class HomeActivity : ComponentActivity() {
                         modifier = Modifier.align(Alignment.BottomCenter),
                     )
                 }
+            }
+        }
+    }
+
+    private fun onLiveTap(kind: LiveKind, face: LiveFace?) {
+        when (val tap = liveTap(kind, face)) {
+            LiveTap.RequestCalendar -> calendarPermission.launch(Manifest.permission.READ_CALENDAR)
+            is LiveTap.Open -> try {
+                startActivity(liveOpenIntent(tap.kind).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            } catch (_: ActivityNotFoundException) {
             }
         }
     }

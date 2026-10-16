@@ -36,7 +36,12 @@ import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.round
 import com.mymetroui.launcher.data.AppInfo
 import com.mymetroui.launcher.domain.TileLayout
+import com.mymetroui.launcher.data.live.LiveFace
+import com.mymetroui.launcher.data.live.LiveKind
+import com.mymetroui.launcher.ui.TileContent
 import com.mymetroui.launcher.ui.TileUi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import com.mymetroui.launcher.ui.motion.MotionSpec
 import com.mymetroui.launcher.ui.motion.TurnstileState
 import com.mymetroui.launcher.ui.motion.flyInProgress
@@ -60,6 +65,9 @@ fun StartGrid(
     onUnpin: (Long) -> Unit = {},
     onExitEdit: () -> Unit = {},
     turnstile: TurnstileState? = null,
+    liveFace: (LiveKind) -> Flow<LiveFace?> = { emptyFlow() },
+    flipEnabled: Boolean = true,
+    onFlipped: (LiveKind) -> Unit = {},
 ) {
     var selectedId by remember { mutableStateOf<Long?>(null) }
     var dragId by remember { mutableStateOf<Long?>(null) }
@@ -120,10 +128,8 @@ fun StartGrid(
                         )
                     }
 
-                    TileView(
-                        ui,
-                        remember(ui.app.key) { loadIcon(ui.app) },
-                        Modifier
+                    val icon = remember(ui.tile.key) { ui.app?.let(loadIcon) ?: android.graphics.drawable.ColorDrawable(0) }
+                    val tileModifier = Modifier
                             .offset { if (dragging) pos + dragOffset.round() else pos }
                             .size(cell * t.size.w + Gap * (t.size.w - 1), cell * t.size.h + Gap * (t.size.h - 1))
                             .graphicsLayer {
@@ -145,8 +151,13 @@ fun StartGrid(
                                 val r = it.boundsInWindow().toAndroidRectF()
                                 bounds = Rect(r.left.toInt(), r.top.toInt(), r.right.toInt(), r.bottom.toInt())
                             }
-                            .then(gestures),
-                    )
+                            .then(gestures)
+                    val liveKind = (ui.content as? TileContent.Live)?.kind
+                    if (liveKind != null) {
+                        LiveTile(ui, liveKind, icon, liveFace, flipEnabled && !editing, onFlipped, tileModifier)
+                    } else {
+                        TileView(ui, icon, tileModifier)
+                    }
                 }
             }
             if (editing && selected != null && dragId == null) {
