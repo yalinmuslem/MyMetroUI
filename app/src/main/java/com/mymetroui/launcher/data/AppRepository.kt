@@ -7,6 +7,8 @@ import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
+import android.os.Handler
+import android.os.Looper
 import android.os.UserHandle
 import android.os.UserManager
 import android.provider.MediaStore
@@ -29,7 +31,8 @@ class AppRepository(private val context: Context) : AppSource {
             override fun onPackagesAvailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) { trySend(Unit) }
             override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) { trySend(Unit) }
         }
-        launcherApps.registerCallback(cb)
+        // this block runs on Dispatchers.IO, which has no Looper; the callbacks only trySend, so the main looper is fine
+        launcherApps.registerCallback(cb, Handler(Looper.getMainLooper()))
         trySend(Unit)
         awaitClose { launcherApps.unregisterCallback(cb) }
     }.conflate().let { events ->
