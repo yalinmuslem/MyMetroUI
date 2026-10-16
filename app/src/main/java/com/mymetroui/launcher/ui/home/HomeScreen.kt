@@ -35,6 +35,11 @@ import androidx.lifecycle.compose.currentStateAsState
 import androidx.compose.foundation.layout.statusBarsPadding
 import com.mymetroui.launcher.domain.next
 import com.mymetroui.launcher.ui.start.StartGrid
+import com.mymetroui.launcher.data.live.LiveFace
+import com.mymetroui.launcher.data.live.LiveKind
+import com.mymetroui.launcher.ui.TileContent
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.withTimeoutOrNull
 import com.mymetroui.launcher.ui.settings.SettingsScreen
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -58,6 +63,8 @@ fun HomeScreen(
     resumes: Flow<Unit> = emptyFlow(),
     onLaunchApp: (com.mymetroui.launcher.data.AppInfo) -> Unit = {},
     theme: com.mymetroui.launcher.data.ThemeSource,
+    onAddLive: (LiveKind) -> Unit = {},
+    onLiveTap: (LiveKind, LiveFace?) -> Unit = { _, _ -> },
     loadIcon: (com.mymetroui.launcher.data.AppInfo) -> android.graphics.drawable.Drawable,
 ) {
     val pager = rememberPagerState(pageCount = { 2 })
@@ -109,6 +116,12 @@ fun HomeScreen(
                                 // never leave the tiles swung out if the app could not be started
                                 if (!start.launch(app, bounds)) turnstile.playIn()
                             }
+                            (ui.content as? TileContent.Live)?.kind?.let { kind ->
+                                scope.launch {
+                                    val face = withTimeoutOrNull(500) { start.live.face(kind).firstOrNull() }
+                                    onLiveTap(kind, face)
+                                }
+                            }
                         },
                         turnstile = turnstile,
                         liveFace = start.live::face,
@@ -147,6 +160,8 @@ fun HomeScreen(
                 onAccent = theme::setAccent,
                 onMode = theme::setMode,
                 onClose = { showSettings = false },
+                pinnedLive = tiles.mapNotNull { (it.content as? TileContent.Live)?.kind }.toSet(),
+                onAddLive = onAddLive,
             )
         }
     }

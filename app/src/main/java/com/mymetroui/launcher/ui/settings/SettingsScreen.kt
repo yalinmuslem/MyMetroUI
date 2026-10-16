@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mymetroui.launcher.R
 import com.mymetroui.launcher.data.ThemeMode
+import com.mymetroui.launcher.data.live.LiveKind
 import com.mymetroui.launcher.data.ThemeSettings
 import com.mymetroui.launcher.ui.theme.Accents
 
@@ -34,6 +35,8 @@ fun SettingsScreen(
     onAccent: (String) -> Unit,
     onMode: (ThemeMode) -> Unit,
     onClose: () -> Unit,
+    pinnedLive: Set<LiveKind> = emptySet(),
+    onAddLive: (LiveKind) -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
     Column(
@@ -65,6 +68,20 @@ fun SettingsScreen(
                 }
             }
         }
+        Text(stringResource(R.string.live_tiles), Modifier.padding(top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleMedium)
+        LiveKind.values().forEach { kind ->
+            val isPinned = kind in pinnedLive
+            Row(
+                Modifier.padding(vertical = 4.dp)
+                    .background(if (isPinned) scheme.surfaceVariant else scheme.primary)
+                    .testTag("live-add-${kind.name.lowercase()}")
+                    .clickable(enabled = !isPinned) { onAddLive(kind) }
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+            ) {
+                Text(stringResource(liveLabel(kind)), Modifier.weight(1f), color = if (isPinned) scheme.onSurfaceVariant else scheme.onPrimary)
+                if (isPinned) Text(stringResource(R.string.live_on_start), color = scheme.onSurfaceVariant)
+            }
+        }
     }
 }
 
@@ -77,4 +94,10 @@ private fun ModeOption(tag: String, label: String, selected: Boolean, onClick: (
             .selectable(selected = selected, onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 12.dp),
     ) { Text(label, color = if (selected) scheme.onPrimary else scheme.onSurfaceVariant) }
+}
+
+private fun liveLabel(kind: LiveKind): Int = when (kind) {
+    LiveKind.CLOCK -> R.string.live_clock
+    LiveKind.CALENDAR -> R.string.live_calendar
+    LiveKind.PHOTOS -> R.string.live_photos
 }
