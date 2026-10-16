@@ -41,7 +41,7 @@ Theme (accent palette + dark/light) and live tiles (clock, calendar, photos with
 
 Action Center and notification badges are implemented. Play Store listing must disclose the notification-listener use.
 
-Not yet done: lock screen, Action Center, Hubs, search, widgets.
+Not yet done: lock screen, Hubs, search, widgets.
 
 ## Project layout
 
