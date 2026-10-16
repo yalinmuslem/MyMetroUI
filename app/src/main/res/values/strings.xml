@@ -15,6 +15,10 @@
     <string name="live_photos">Photos</string>
     <string name="live_on_start">On Start</string>
     <string name="action_center">Action Center</string>
+    <string name="hubs">Hubs</string>
+    <string name="hub_people">People</string>
+    <string name="hub_photos">Photos</string>
+    <string name="hub_settings">Settings</string>
     <string name="welcome_setting">Show welcome screen after screen off</string>
     <plurals name="welcome_notifications">
         <item quantity="one">%d notification</item>

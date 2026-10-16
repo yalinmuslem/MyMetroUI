@@ -164,3 +164,24 @@ class WelcomeSwitchTest {
         assertEquals(listOf(false), calls)
     }
 }
+
+@RunWith(RobolectricTestRunner::class)
+class HubSettingsTest {
+    @get:Rule val rule = createComposeRule()
+
+    private fun show(pinned: Set<com.mymetroui.launcher.data.hub.HubKind>, added: MutableList<com.mymetroui.launcher.data.hub.HubKind>) = rule.setContent {
+        MyMetroUITheme { SettingsScreen(ThemeSettings(accentId = "red"), {}, {}, {}, pinnedHubs = pinned, onAddHub = { added += it }) }
+    }
+
+    @Test fun hubButton_callsOnAddHub() {
+        val added = mutableListOf<com.mymetroui.launcher.data.hub.HubKind>()
+        show(emptySet(), added)
+        rule.onNodeWithTag("hub-add-photos").performScrollTo().performClick()
+        assertEquals(listOf(com.mymetroui.launcher.data.hub.HubKind.PHOTOS), added)
+    }
+
+    @Test fun pinnedHubButton_isDisabled() {
+        show(setOf(com.mymetroui.launcher.data.hub.HubKind.PEOPLE), mutableListOf())
+        rule.onNodeWithTag("hub-add-people").performScrollTo().assertIsNotEnabled()
+    }
+}
