@@ -11,6 +11,7 @@ import com.mymetroui.launcher.data.live.PhotoStore
 import com.mymetroui.launcher.data.live.PhotosSource
 import com.mymetroui.launcher.data.AppRepository
 import com.mymetroui.launcher.data.ThemeRepository
+import com.mymetroui.launcher.data.notif.NotificationRepository
 import com.mymetroui.launcher.data.TileRepository
 import com.mymetroui.launcher.data.db.AppDatabase
 
@@ -19,6 +20,7 @@ class LauncherApp : Application() {
     val appRepository by lazy { AppRepository(this) }
     val tileRepository by lazy { TileRepository(AppDatabase.create(this).tileDao()) }
     val themeRepository by lazy { ThemeRepository(getSharedPreferences("theme", MODE_PRIVATE)) }
+    val notificationRepository by lazy { NotificationRepository() }
     val photoStore by lazy { PhotoStore(getSharedPreferences("photos", MODE_PRIVATE)) }
     val liveSource: LiveTileSource by lazy {
         CompositeLiveSource(
