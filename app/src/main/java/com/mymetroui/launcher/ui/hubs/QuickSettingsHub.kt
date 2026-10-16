@@ -2,7 +2,9 @@ package com.mymetroui.launcher.ui.hubs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,7 +21,8 @@ import com.mymetroui.launcher.ui.actioncenter.QuickSettingsSection
 @Composable
 fun ColumnScope.QuickSettingsHub(state: ActionCenterState, actions: ActionCenterActions, onOpenSettings: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    QuickSettingsSection(state, actions)
+    // the section draws its buttons in the page background colour, so give it the same panel as the Action Center
+    Column(Modifier.fillMaxWidth().background(scheme.surfaceVariant).padding(16.dp)) { QuickSettingsSection(state, actions) }
     Text(
         stringResource(R.string.settings),
         Modifier.padding(top = 24.dp).background(scheme.primary).clickable(onClick = onOpenSettings)
