@@ -37,6 +37,7 @@ fun SettingsScreen(
     onClose: () -> Unit,
     pinnedLive: Set<LiveKind> = emptySet(),
     onAddLive: (LiveKind) -> Unit = {},
+    onOpenActionCenter: () -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
     Column(
@@ -68,6 +69,12 @@ fun SettingsScreen(
                 }
             }
         }
+        Text(
+            stringResource(R.string.action_center),
+            Modifier.padding(top = 24.dp).background(scheme.primary).clickable(onClick = onOpenActionCenter)
+                .padding(horizontal = 20.dp, vertical = 12.dp).testTag("open-action-center"),
+            color = scheme.onPrimary,
+        )
         Text(stringResource(R.string.live_tiles), Modifier.padding(top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleMedium)
         LiveKind.values().forEach { kind ->
             val isPinned = kind in pinnedLive

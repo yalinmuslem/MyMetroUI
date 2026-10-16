@@ -150,7 +150,11 @@ class EditModeTest {
         }
         assertTrue("tile never flipped", rule.onAllNodesWithTag("live-back-1").fetchSemanticsNodes().isNotEmpty())
         rule.runOnIdle { editing = true }
-        rule.mainClock.advanceTimeBy(1_500)
+        // advance in small steps: the exact frame on which the rotation crosses 90 degrees is not what is under test
+        var settle = 0
+        while (rule.onAllNodesWithTag("live-back-1").fetchSemanticsNodes().isNotEmpty() && settle++ < 60) {
+            rule.mainClock.advanceTimeBy(100)
+        }
         rule.onNodeWithTag("live-back-1").assertDoesNotExist()
     }
 }

@@ -48,7 +48,7 @@ class PinUnpinFlowTest {
         val start = StartViewModel(tiles, apps)
         val appList = AppListViewModel(tiles, apps)
         rule.setContent {
-            MyMetroUITheme { HomeScreen(start, appList, theme = FakeThemeSource(), loadIcon = { ColorDrawable(0) }) }
+            MyMetroUITheme { HomeScreen(start, appList, theme = FakeThemeSource(), loadIcon = { ColorDrawable(0) }, controller = testController()) }
         }
 
         rule.onAllNodes(isTile).assertCountEquals(0)

@@ -68,6 +68,7 @@ fun StartGrid(
     liveFace: (LiveKind) -> Flow<LiveFace?> = { emptyFlow() },
     flipEnabled: Boolean = true,
     onFlipped: (LiveKind) -> Unit = {},
+    badgeFor: (AppInfo) -> Int = { 0 },
 ) {
     var selectedId by remember { mutableStateOf<Long?>(null) }
     var dragId by remember { mutableStateOf<Long?>(null) }
@@ -156,7 +157,7 @@ fun StartGrid(
                     if (liveKind != null) {
                         LiveTile(ui, liveKind, icon, liveFace, flipEnabled && !editing, onFlipped, tileModifier)
                     } else {
-                        TileView(ui, icon, tileModifier)
+                        TileView(ui, icon, tileModifier, badge = ui.app?.let(badgeFor) ?: 0)
                     }
                 }
             }

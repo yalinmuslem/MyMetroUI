@@ -1,6 +1,13 @@
 package com.mymetroui.launcher
 
 import android.app.Application
+import android.app.KeyguardManager
+import com.mymetroui.launcher.data.quick.CameraTorch
+import com.mymetroui.launcher.data.quick.SystemBrightness
+import com.mymetroui.launcher.ui.actioncenter.ActionCenterController
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import android.net.Uri
 import com.mymetroui.launcher.data.live.CalendarSource
 import com.mymetroui.launcher.data.live.ClockSource
@@ -21,6 +28,15 @@ class LauncherApp : Application() {
     val tileRepository by lazy { TileRepository(AppDatabase.create(this).tileDao()) }
     val themeRepository by lazy { ThemeRepository(getSharedPreferences("theme", MODE_PRIVATE)) }
     val notificationRepository by lazy { NotificationRepository() }
+    val torch by lazy { CameraTorch(this) }
+    val brightness by lazy { SystemBrightness(this) }
+    val actionCenter by lazy {
+        ActionCenterController(
+            notificationRepository, torch, brightness,
+            { getSystemService(KeyguardManager::class.java).isDeviceLocked },
+            CoroutineScope(SupervisorJob() + Dispatchers.Main),
+        )
+    }
     val photoStore by lazy { PhotoStore(getSharedPreferences("photos", MODE_PRIVATE)) }
     val liveSource: LiveTileSource by lazy {
         CompositeLiveSource(
