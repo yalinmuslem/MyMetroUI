@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -118,6 +120,7 @@ fun SettingsScreen(
                 if (isPinned) Text(stringResource(R.string.live_on_start), color = scheme.onSurfaceVariant)
             }
         }
+        Box(Modifier.navigationBarsPadding().height(80.dp)) // keeps the last row clear of the nav bar and the home-app banner
     }
 }
 
