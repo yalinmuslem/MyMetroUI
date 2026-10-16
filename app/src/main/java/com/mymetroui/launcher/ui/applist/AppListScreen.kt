@@ -5,6 +5,10 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -56,7 +60,11 @@ fun AppListScreen(
     }
 
     Box(modifier.fillMaxSize()) {
-        LazyColumn(Modifier.fillMaxSize().statusBarsPadding(), state = listState) {
+        // bottom room for the system navigation bar plus the default-launcher banner, so the last row (Settings) stays reachable
+        LazyColumn(
+            Modifier.fillMaxSize().statusBarsPadding(), state = listState,
+            contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 80.dp),
+        ) {
             groups.forEach { (letter, apps) ->
                 item(key = "h$letter") {
                     Box(
